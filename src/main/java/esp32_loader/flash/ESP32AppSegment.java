@@ -36,7 +36,7 @@ public class ESP32AddressSpace {
 				this.SetAddressRangePermissions(0x4007_0000, 0x4007_FFFF, true, true);
 				this.SetAddressRangePermissions(0x4008_0000, 0x4009_FFFF, true, true);
 				this.SetAddressRangePermissions(0x400A_0000, 0x400A_FFFF, true, true);
-				this.SetAddressRangePermissions(0x400B_0000, 0x400B_7FFF  true, true);
+				this.SetAddressRangePermissions(0x400B_0000, 0x400B_7FFF, true, true);
 				this.SetAddressRangePermissions(0x400B_8000, 0x400B_FFFF, true, true);
 				// external
 				this.SetAddressRangePermissions(0x3F40_0000, 0x3F7F_FFFF, false, false);
