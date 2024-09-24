@@ -1,2 +1,0 @@
-rootProject.name = 'ghidra-esp32-flash-loader'
-include 'jcpp' 
