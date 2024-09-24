@@ -145,7 +145,7 @@ public class ESP32AppSegment {
 		LoadAddress = reader.readNextInt();
 		Length = reader.readNextInt();
 		Data = reader.readNextByteArray(Length);
-		Permissions = addressSpace.GetAddressRangePermissions(LoadAddress)
+		Permissions = addressSpace.GetAddressRangePermissions(LoadAddress);
 	}
 
 	public boolean isRead() {
