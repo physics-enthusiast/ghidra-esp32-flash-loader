@@ -255,7 +255,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 					var name = m.group(1);
 					var address = addressFactory.getAddress(m.group(2));
 					var function = functionManager.getFunctionAt(address);
-					if (function) {
+					if (function != null) {
 						var oldName = function.getName();
 						function.setName(name, SourceType.DEFAULT);
 						log.appendMsg(String.format("Renamed function %s to %s at address %s", oldName, name, address));
