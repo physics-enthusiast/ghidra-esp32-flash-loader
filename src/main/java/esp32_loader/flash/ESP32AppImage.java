@@ -29,7 +29,7 @@ public class ESP32AppImage {
 
 		ESP32AppMemory addressSpace = new ESP32AppMemory(chipID);
 		for (var x = 0; x < this.SegmentCount; x++) {
-			var seg = addressSpace.getSegment(this, reader);
+			var seg = new ESP32AppSegment(this, reader, addressSpace);
 			Segments.add(seg);
 		}
 
