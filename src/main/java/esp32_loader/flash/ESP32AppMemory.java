@@ -2,9 +2,6 @@ package esp32_loader.flash;
 
 import esp32_loader.exceptions.UnknownModelException;
 
-import ghidra.app.util.bin.BinaryReader;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,15 +20,13 @@ class ESP32AddressRange {
 }
 
 public class ESP32AppMemory {
-	private BinaryReader reader;
 	private List<ESP32AddressRange> ESP32AddressRangeList = new ArrayList<ESP32AddressRange>();
 
 	private void SetAddressRangePermissions(int StartAddress, int EndAddress, boolean Writeable, boolean Executable) {
 		ESP32AddressRangeList.add(new ESP32AddressRange(StartAddress, EndAddress, Writeable, Executable));
 	}
 
-	public ESP32AppMemory(BinaryReader r, short chipID) throws UnknownModelException {
-		reader = r;
+	public ESP32AppMemory(short chipID) throws UnknownModelException {
 		switch(chipID) { // based on the technical reference manuals of the respective chips
 			case 0: // ESP32
 				// internal
@@ -122,10 +117,7 @@ public class ESP32AppMemory {
 				throw new UnknownModelException("Unknown ESP32 Chip ID : " + chipID );
 		}
 	}
-	public ESP32AppSegment getNextSegment() throws IOException {
-		int LoadAddress = reader.readNextInt();
-		int Length = reader.readNextInt();
-		byte[] Data = reader.readNextByteArray(Length);
+	public ESP32AppSegment getSegment(int LoadAddress, int Length, byte[] Data) {
 		boolean addressRangeFound = false;
 		boolean addressRangeWriteable = false;
 		boolean addressRangeExecutable = false;
