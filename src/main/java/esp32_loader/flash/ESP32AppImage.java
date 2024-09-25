@@ -34,7 +34,7 @@ public class ESP32AppImage {
 			addressSpace = new ESP32AppMemory(chipID);
 		} catch (UnknownModelException e) {
 			System.out.println("Unknown Chip ID, assuming ESP32");
-			addressSpace = new ESP32AppMemory(0);
+			addressSpace = new ESP32AppMemory((short)0);
 		}
 		for (var x = 0; x < this.SegmentCount; x++) {
 			int LoadAddress = reader.readNextInt();
