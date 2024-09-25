@@ -117,13 +117,6 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 	protected void load(ByteProvider provider, LoadSpec loadSpec, List<Option> options, Program program,
 			TaskMonitor monitor, MessageLog log) throws CancelledException, IOException {
 
-		try {
-			processELF(program, options, monitor, log);
-		} catch (Exception ex) {
-			String exceptionTxt = ex.toString();
-			System.out.println(exceptionTxt);
-		}
-
 		FlatProgramAPI api = new FlatProgramAPI(program);
 		ESP32AppImage imageToLoad = null;
 		if (parsedAppImage != null) {
@@ -196,6 +189,12 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			/* set the entry point */
 			program.getSymbolTable().addExternalEntryPoint(api.toAddr(imageToLoad.EntryAddress));
 
+			try {
+				processLD(program, options, monitor, log);
+			} catch (Exception ex) {
+				String exceptionTxt = ex.toString();
+				System.out.println(exceptionTxt);
+			}
 			/* Create Peripheral Device Memory Blocks */
 			processSVD(program, api, imageToLoad.chipID, log);
 
@@ -207,22 +206,46 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 
 	}
 
-	private void processELF(Program program, List<Option> options, TaskMonitor monitor, MessageLog log)
-			throws Exception {
-		List<ResourceFile> elfFileList = Application.findFilesByExtensionInMyModule("elf");
-
-		if (elfFileList.size() > 0) {
-			if (elfFileList.get(0).getName().equals("esp32_rom.elf")) {
-				/* load the ESP 32 BootROM elf */
-				byte[] elfData = Files.readAllBytes(Paths.get(elfFileList.get(0).getAbsolutePath()));
-				ByteArrayProvider bap = new ByteArrayProvider(elfData);
-				ElfLoader loader = new ElfLoader();
-
-				LoadSpec esp32LoadSpec = new LoadSpec(this, 0, new LanguageCompilerSpecPair(
-						new LanguageID("Xtensa:LE:32:default"), new CompilerSpecID("default")), true);
-
-				List<Option> elfOpts = loader.getDefaultOptions(bap, esp32LoadSpec, null, true);
-				loader.load(bap, esp32LoadSpec, elfOpts, program, monitor, log);
+	private void processLD(Program program, short chipID, MessageLog log) throws Exception {
+		var ldFilePath = "esp-idf/components/esp_rom/";
+		ResourceFile ldFileDir
+		ResourceFile[] ldFileList;
+		switch(chipID) {
+			case 0: // ESP32
+				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32");
+				break
+			case 2: // ESP32-S2
+				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32s2");
+				break
+			case 9: // ESP32-S3
+				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32s3");
+				break
+			case 12: // ESP32-C2
+				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c2");
+				break
+			case 5: // ESP32-C3
+				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c3");
+				break
+			case 13: // ESP32-C6
+				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c6");
+				break
+			case 20: // ESP32-C61
+				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c61");
+				break
+			case 16: // ESP32-H2
+				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32h2");
+				break
+			default:
+				throw new UnknownModelException("Unknown ESP32 Chip ID : " + chipID );
+		}
+		ldFileList = ldFileDir.listFiles();
+		FunctionManager functionManager = program.getFunctionManager();
+		for (ResourceFile ldFile : ldFileList) {
+			Scanner sc = new Scanner(ldFile.getInputStream(), "UTF-8");
+			Pattern p = Pattern.compile("PROVIDE \((.*)=(.*)\)");
+			while (sc.findWithinHorizon(p, 0) != null) {
+				MatchResult m = sc.match();
+				
 			}
 		}
 	}
@@ -230,7 +253,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 	private void processSVD(Program program, FlatProgramAPI api, short chipID, MessageLog log) throws Exception {
 		var svdFileDir = "svd/svd/";
 		ResourceFile svdFile
-		switch(chipID) { // based on the technical reference manuals of the respective chips
+		switch(chipID) {
 			case 0: // ESP32
 				svdFile = getModuleDataFile(svdFileDir + "esp32.svd");
 				break
@@ -246,8 +269,8 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			case 5: // ESP32-C3
 				svdFile = getModuleDataFile(svdFileDir + "esp32c3.svd");
 				break
-			case 13: // ESP32-C6
-			case 20:
+			case 13:
+			case 20: // ESP32-C61
 				svdFile = getModuleDataFile(svdFileDir + "esp32c6.svd");
 				break
 			case 16: // ESP32-H2
@@ -255,10 +278,13 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				break
 			default:
 				throw new UnknownModelException("Unknown ESP32 Chip ID : " + chipID );
+		}
+
+
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = factory.newDocumentBuilder();
 
-		Document doc = builder.parse(svdFile.getAbsolutePath());
+		Document doc = builder.parse(svdFile.getInputStream());
 
 		Element root = doc.getDocumentElement();
 
