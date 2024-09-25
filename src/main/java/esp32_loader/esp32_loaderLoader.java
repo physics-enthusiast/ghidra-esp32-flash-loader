@@ -39,13 +39,18 @@ import ghidra.framework.model.DomainObject;
 import ghidra.framework.store.LockException;
 import ghidra.program.database.mem.FileBytes;
 import ghidra.program.flatapi.FlatProgramAPI;
+import ghidra.program.model.address.AddressFactory;
 import ghidra.program.model.address.AddressOverflowException;
+import ghidra.program.model.address.AddressSet;
+import ghidra.program.model.block.CodeBlock;
+import ghidra.program.model.block.IsolatedEntrySubModel;
 import ghidra.program.model.data.DataTypeConflictHandler;
 import ghidra.program.model.data.StructureDataType;
 import ghidra.program.model.data.UnsignedLongDataType;
 import ghidra.program.model.lang.CompilerSpecID;
 import ghidra.program.model.lang.LanguageCompilerSpecPair;
 import ghidra.program.model.lang.LanguageID;
+import ghidra.program.model.listing.FunctionManager;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.mem.MemoryBlock;
 import ghidra.program.model.mem.MemoryConflictException;
@@ -190,7 +195,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			program.getSymbolTable().addExternalEntryPoint(api.toAddr(imageToLoad.EntryAddress));
 
 			try {
-				processLD(program, options, monitor, log);
+				processLD(program, monitor, imageToLoad.chipID, log);
 			} catch (Exception ex) {
 				String exceptionTxt = ex.toString();
 				System.out.println(exceptionTxt);
@@ -206,46 +211,74 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 
 	}
 
-	private void processLD(Program program, short chipID, MessageLog log) throws Exception {
+	private void processLD(Program program, TaskMonitor monitor, short chipID, MessageLog log) throws Exception {
 		var ldFilePath = "esp-idf/components/esp_rom/";
 		ResourceFile ldFileDir
 		ResourceFile[] ldFileList;
 		switch(chipID) {
 			case 0: // ESP32
-				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32");
+				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32/ld");
 				break
 			case 2: // ESP32-S2
-				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32s2");
+				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32s2/ld");
 				break
 			case 9: // ESP32-S3
-				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32s3");
+				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32s3/ld");
 				break
 			case 12: // ESP32-C2
-				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c2");
+				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c2/ld");
 				break
 			case 5: // ESP32-C3
-				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c3");
+				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c3/ld");
 				break
 			case 13: // ESP32-C6
-				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c6");
+				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c6/ld");
 				break
 			case 20: // ESP32-C61
-				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c61");
+				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c61/ld");
 				break
 			case 16: // ESP32-H2
-				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32h2");
+				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32h2/ld");
 				break
 			default:
 				throw new UnknownModelException("Unknown ESP32 Chip ID : " + chipID );
 		}
 		ldFileList = ldFileDir.listFiles();
 		FunctionManager functionManager = program.getFunctionManager();
+		AddressFactory addressFactory = program.getAddressFactory()
 		for (ResourceFile ldFile : ldFileList) {
 			Scanner sc = new Scanner(ldFile.getInputStream(), "UTF-8");
-			Pattern p = Pattern.compile("PROVIDE \((.*)=(.*)\)");
+			Pattern p = Pattern.compile("PROVIDE \((.*)=.*0x(.*)\)");
 			while (sc.findWithinHorizon(p, 0) != null) {
 				MatchResult m = sc.match();
-				
+				try {
+					var name = m.group(1);
+					var address = addressFactory.getAddress(m.group(2));
+					var function = functionManager.getFunctionAt(address);
+					if (function) {
+						var oldName = function.getName();
+						function.setName(name, SourceType.DEFAULT)
+						log.appendMsg(String.format("Renamed function %s to %s at address %s", oldName, name, address));
+					} else {
+						// taken from getSubroutineAddresses() in ExtendedFlatProgramAPI.java from the Ghidra codebase
+						AddressSet subroutineAddresses = new AddressSet();
+
+						IsolatedEntrySubModel model = new IsolatedEntrySubModel(program);
+						CodeBlock[] codeBlocksContaining = model.getCodeBlocksContaining(address, monitor);
+
+						for (CodeBlock element : codeBlocksContaining) {
+							subroutineAddresses.add(element);
+							if (monitor.isCancelled()) {
+								break
+							}
+						}
+						functionManager.createFunction(name, address, subroutineAddresses, SourceType.DEFAULT);
+						log.appendMsg(String.format("Created function %s at address %s", name, address));
+					}
+				} catch (Exception ex) {
+					log.appendException(ex);
+					continue
+				} 
 			}
 		}
 	}
