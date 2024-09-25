@@ -44,6 +44,7 @@ import ghidra.program.database.mem.FileBytes;
 import ghidra.program.flatapi.FlatProgramAPI;
 import ghidra.program.model.address.AddressFactory;
 import ghidra.program.model.address.AddressOverflowException;
+import ghidra.program.model.address.AddressSet;
 import ghidra.program.model.data.DataTypeConflictHandler;
 import ghidra.program.model.data.StructureDataType;
 import ghidra.program.model.data.UnsignedLongDataType;
@@ -53,7 +54,6 @@ import ghidra.program.model.lang.LanguageID;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.mem.MemoryBlock;
 import ghidra.program.model.mem.MemoryConflictException;
-import ghidra.program.model.symbol.Namespace;
 import ghidra.program.model.symbol.SourceType;
 import ghidra.program.model.util.AddressSetPropertyMap;
 import ghidra.program.model.util.CodeUnitInsertionException;
@@ -244,6 +244,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		ldFileList = ldFileDir.listFiles();
 		AddressFactory addressFactory = program.getAddressFactory();
 		Namespace namespace = api.createNamespace(null, "ESP32");
+		AddressSet addrSet = new AddressSet();
 		for (ResourceFile ldFile : ldFileList) {
 			Scanner sc = new Scanner(ldFile.getInputStream(), "UTF-8");
 			Pattern p = Pattern.compile("PROVIDE \\((.*)=.*0x(.*)\\)");
@@ -252,13 +253,34 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				try {
 					var name = m.group(1).trim();
 					var address = addressFactory.getAddress(m.group(2).trim());
-					api.createLabel(address, name, namespace, true, SourceType.ANALYSIS);
+					var function = api.getFunctionAt(address);
+					if (function != null) {
+						var oldName = function.getName();
+						function.setName(name, SourceType.DEFAULT);
+						log.appendMsg(String.format("Renamed function %s to %s at address %s", oldName, name, address));
+					} else {
+						api.createFunction(address, name);
+						log.appendMsg(String.format("Created function %s at address %s", name, address));
+					}
+					addrSet.add(address);
 				} catch (Exception ex) {
 					log.appendException(ex);
 					continue;
 				} 
 			}
 		}
+		var mem = program.getMemory()
+		var start = addrSet.getMinAddress();
+		var end = addrSet.getMaxAddress();
+		boolean overlay;
+		if (mem.contains(start, end) == false) {
+			overlay = false;
+		} else {
+			overlay = true;
+		}
+		var memBlock = mem.createUninitializedBlock("ROM", start, end - start, overlay);
+		memBlock.setPermissions(true, false, true);
+		memBlock.setSourceName("ESP32 Loader");
 	}
 
 	private void processSVD(Program program, FlatProgramAPI api, short chipID, MessageLog log) throws Exception {
