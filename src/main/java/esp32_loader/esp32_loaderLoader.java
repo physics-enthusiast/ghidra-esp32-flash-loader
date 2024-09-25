@@ -44,9 +44,6 @@ import ghidra.program.database.mem.FileBytes;
 import ghidra.program.flatapi.FlatProgramAPI;
 import ghidra.program.model.address.AddressFactory;
 import ghidra.program.model.address.AddressOverflowException;
-import ghidra.program.model.address.AddressSet;
-import ghidra.program.model.block.CodeBlock;
-import ghidra.program.model.block.IsolatedEntrySubModel;
 import ghidra.program.model.data.DataTypeConflictHandler;
 import ghidra.program.model.data.StructureDataType;
 import ghidra.program.model.data.UnsignedLongDataType;
@@ -196,7 +193,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 
 			try {
 				/* Label BootROM Addresses */
-				processLD(program, monitor, imageToLoad.chipID, log);
+				processLD(program, api, imageToLoad.chipID, log);
 				/* Create Peripheral Device Memory Blocks */
 				processSVD(program, api, imageToLoad.chipID, log);
 			} catch (Exception ex) {
@@ -212,7 +209,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 
 	}
 
-	private void processLD(Program program, TaskMonitor monitor, short chipID, MessageLog log) throws Exception {
+	private void processLD(Program program, FlatProgramAPI api, short chipID, MessageLog log) throws Exception {
 		var ldFilePath = "esp-idf/components/esp_rom/";
 		ResourceFile ldFileDir;
 		ResourceFile[] ldFileList;
@@ -245,7 +242,6 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				throw new UnknownModelException("Unknown ESP32 Chip ID : " + chipID );
 		}
 		ldFileList = ldFileDir.listFiles();
-		FunctionManager functionManager = program.getFunctionManager();
 		AddressFactory addressFactory = program.getAddressFactory();
 		for (ResourceFile ldFile : ldFileList) {
 			Scanner sc = new Scanner(ldFile.getInputStream(), "UTF-8");
@@ -255,25 +251,13 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				try {
 					var name = m.group(1).trim();
 					var address = addressFactory.getAddress(m.group(2).trim());
-					var function = functionManager.getFunctionAt(address);
+					var function = api.getFunctionAt(address);
 					if (function != null) {
 						var oldName = function.getName();
 						function.setName(name, SourceType.DEFAULT);
 						log.appendMsg(String.format("Renamed function %s to %s at address %s", oldName, name, address));
 					} else {
-						// taken from getSubroutineAddresses() in ExtendedFlatProgramAPI.java from the Ghidra codebase
-						AddressSet subroutineAddresses = new AddressSet();
-
-						IsolatedEntrySubModel model = new IsolatedEntrySubModel(program);
-						CodeBlock[] codeBlocksContaining = model.getCodeBlocksContaining(address, monitor);
-
-						for (CodeBlock element : codeBlocksContaining) {
-							subroutineAddresses.add(element);
-							if (monitor.isCancelled()) {
-								break;
-							}
-						}
-						functionManager.createFunction(name, address, subroutineAddresses, SourceType.DEFAULT);
+						api.createFunction(address, name);
 						log.appendMsg(String.format("Created function %s at address %s", name, address));
 					}
 				} catch (Exception ex) {
