@@ -31,17 +31,21 @@ public class ESP32AppImage {
 
 		ESP32AppMemory addressSpace;
 		try {
-			addressSpace = new ESP32AppMemory(chipID);
+			try {
+				addressSpace = new ESP32AppMemory(chipID);
+			} catch (UnknownModelException e) {
+				System.out.println("Unknown Chip ID, assuming ESP32");
+				addressSpace = new ESP32AppMemory((short)0);
+			}
+			for (var x = 0; x < this.SegmentCount; x++) {
+				int LoadAddress = reader.readNextInt();
+				int Length = reader.readNextInt();
+				byte[] Data = reader.readNextByteArray(Length); 
+				var seg = addressSpace.getSegment(LoadAddress, Length, Data);
+				Segments.add(seg);
+			}
 		} catch (UnknownModelException e) {
-			System.out.println("Unknown Chip ID, assuming ESP32");
-			addressSpace = new ESP32AppMemory((short)0);
-		}
-		for (var x = 0; x < this.SegmentCount; x++) {
-			int LoadAddress = reader.readNextInt();
-			int Length = reader.readNextInt();
-			byte[] Data = reader.readNextByteArray(Length); 
-			var seg = addressSpace.getSegment(LoadAddress, Length, Data);
-			Segments.add(seg);
+			System.out.println("Unknown Chip ID");
 		}
 
 		/* get to 16 byte boundary */
