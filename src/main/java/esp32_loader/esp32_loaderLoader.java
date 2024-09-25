@@ -213,42 +213,42 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 
 	private void processLD(Program program, TaskMonitor monitor, short chipID, MessageLog log) throws Exception {
 		var ldFilePath = "esp-idf/components/esp_rom/";
-		ResourceFile ldFileDir
+		ResourceFile ldFileDir;
 		ResourceFile[] ldFileList;
 		switch(chipID) {
 			case 0: // ESP32
 				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32/ld");
-				break
+				break;
 			case 2: // ESP32-S2
 				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32s2/ld");
-				break
+				break;
 			case 9: // ESP32-S3
 				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32s3/ld");
-				break
+				break;
 			case 12: // ESP32-C2
 				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c2/ld");
-				break
+				break;
 			case 5: // ESP32-C3
 				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c3/ld");
-				break
+				break;
 			case 13: // ESP32-C6
 				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c6/ld");
-				break
+				break;
 			case 20: // ESP32-C61
 				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c61/ld");
-				break
+				break;
 			case 16: // ESP32-H2
 				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32h2/ld");
-				break
+				break;
 			default:
 				throw new UnknownModelException("Unknown ESP32 Chip ID : " + chipID );
 		}
 		ldFileList = ldFileDir.listFiles();
 		FunctionManager functionManager = program.getFunctionManager();
-		AddressFactory addressFactory = program.getAddressFactory()
+		AddressFactory addressFactory = program.getAddressFactory();
 		for (ResourceFile ldFile : ldFileList) {
 			Scanner sc = new Scanner(ldFile.getInputStream(), "UTF-8");
-			Pattern p = Pattern.compile("PROVIDE \((.*)=.*0x(.*)\)");
+			Pattern p = Pattern.compile("PROVIDE \\((.*)=.*0x(.*)\\)");
 			while (sc.findWithinHorizon(p, 0) != null) {
 				MatchResult m = sc.match();
 				try {
@@ -257,7 +257,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 					var function = functionManager.getFunctionAt(address);
 					if (function) {
 						var oldName = function.getName();
-						function.setName(name, SourceType.DEFAULT)
+						function.setName(name, SourceType.DEFAULT);
 						log.appendMsg(String.format("Renamed function %s to %s at address %s", oldName, name, address));
 					} else {
 						// taken from getSubroutineAddresses() in ExtendedFlatProgramAPI.java from the Ghidra codebase
@@ -269,7 +269,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 						for (CodeBlock element : codeBlocksContaining) {
 							subroutineAddresses.add(element);
 							if (monitor.isCancelled()) {
-								break
+								break;
 							}
 						}
 						functionManager.createFunction(name, address, subroutineAddresses, SourceType.DEFAULT);
@@ -277,7 +277,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 					}
 				} catch (Exception ex) {
 					log.appendException(ex);
-					continue
+					continue;
 				} 
 			}
 		}
@@ -285,30 +285,30 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 
 	private void processSVD(Program program, FlatProgramAPI api, short chipID, MessageLog log) throws Exception {
 		var svdFileDir = "svd/svd/";
-		ResourceFile svdFile
+		ResourceFile svdFile;
 		switch(chipID) {
 			case 0: // ESP32
 				svdFile = getModuleDataFile(svdFileDir + "esp32.svd");
-				break
+				break;
 			case 2: // ESP32-S2
 				svdFile = getModuleDataFile(svdFileDir + "esp32s2.svd");
-				break
+				break;
 			case 9: // ESP32-S3
 				svdFile = getModuleDataFile(svdFileDir + "esp32s3.svd");
-				break
+				break;
 			case 12: // ESP32-C2
 				svdFile = getModuleDataFile(svdFileDir + "esp32c2.svd");
-				break
+				break;
 			case 5: // ESP32-C3
 				svdFile = getModuleDataFile(svdFileDir + "esp32c3.svd");
-				break
+				break;
 			case 13:
 			case 20: // ESP32-C61
 				svdFile = getModuleDataFile(svdFileDir + "esp32c6.svd");
-				break
+				break;
 			case 16: // ESP32-H2
 				svdFile = getModuleDataFile(svdFileDir + "esp32h2.svd");
-				break
+				break;
 			default:
 				throw new UnknownModelException("Unknown ESP32 Chip ID : " + chipID );
 		}
