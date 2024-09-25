@@ -1,5 +1,7 @@
 package esp32_loader.flash;
 
+import esp32_loader.exceptions.UnknownModelException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -13,7 +15,7 @@ public class ESP32AppImage {
 
 	public ArrayList<ESP32AppSegment> Segments = new ArrayList<ESP32AppSegment>();
 
-	public ESP32AppImage(BinaryReader reader) throws IOException {
+	public ESP32AppImage(BinaryReader reader) throws IOException, UnknownModelException {
 		var magic = reader.readNextByte();
 		this.SegmentCount = reader.readNextByte();
 		var spiByte = reader.readNextByte(); // SPI Byte
@@ -29,7 +31,10 @@ public class ESP32AppImage {
 
 		ESP32AppMemory addressSpace = new ESP32AppMemory(chipID);
 		for (var x = 0; x < this.SegmentCount; x++) {
-			var seg = new ESP32AppSegment(this, reader, addressSpace);
+			int LoadAddress = reader.readNextInt();
+			int Length = reader.readNextInt();
+			byte[] Data = reader.readNextByteArray(Length); 
+			var seg = addressSpace.getSegment(LoadAddress, Length, Data);
 			Segments.add(seg);
 		}
 
