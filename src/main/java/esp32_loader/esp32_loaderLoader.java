@@ -269,7 +269,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				} 
 			}
 		}
-		var mem = program.getMemory()
+		var mem = program.getMemory();
 		var start = addrSet.getMinAddress();
 		var end = addrSet.getMaxAddress();
 		boolean overlay;
