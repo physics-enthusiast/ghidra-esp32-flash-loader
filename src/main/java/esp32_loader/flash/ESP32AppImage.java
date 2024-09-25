@@ -29,7 +29,7 @@ public class ESP32AppImage {
 		var reserved = reader.readNextByteArray(8); // Reserved
 		this.HashAppended = (reader.readNextByte() == 0x01);
 
-		ESP32AppMemory addressSpace
+		ESP32AppMemory addressSpace;
 		try {
 			addressSpace = new ESP32AppMemory(chipID);
 		} catch (UnknownModelException e) {
