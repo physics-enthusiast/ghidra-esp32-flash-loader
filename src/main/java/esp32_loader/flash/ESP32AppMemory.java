@@ -1,7 +1,10 @@
 package esp32_loader.flash;
 
-import esp32_loader.exceptions.UnknownModelException
+import esp32_loader.exceptions.UnknownModelException;
 
+import ghidra.app.util.bin.BinaryReader;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,11 +23,15 @@ class ESP32AddressRange {
 }
 
 public class ESP32AppMemory {
+	private BinaryReader reader;
 	private List<ESP32AddressRange> ESP32AddressRangeList = new ArrayList<ESP32AddressRange>();
+
 	private void SetAddressRangePermissions(int StartAddress, int EndAddress, boolean Writeable, boolean Executable) {
 		ESP32AddressRangeList.add(new ESP32AddressRange(StartAddress, EndAddress, Writeable, Executable));
 	}
-	public ESP32AppMemory(short chipID) throws UnknownModelException {
+
+	public ESP32AppMemory(BinaryReader r, short chipID) throws UnknownModelException {
+		reader = r;
 		switch(chipID) { // based on the technical reference manuals of the respective chips
 			case 0: // ESP32
 				// internal
@@ -115,12 +122,15 @@ public class ESP32AppMemory {
 				throw new UnknownModelException("Unknown ESP32 Chip ID : " + chipID );
 		}
 	}
-	public int GetAddressRangePermissions(int address) {
+	public ESP32AppSegment getNextSegment() throws IOException {
+		int LoadAddress = reader.readNextInt();
+		int Length = reader.readNextInt();
+		byte[] Data = reader.readNextByteArray(Length);
 		boolean addressRangeFound = false;
 		boolean addressRangeWriteable = false;
 		boolean addressRangeExecutable = false;
 		for (ESP32AddressRange addressRange : ESP32AddressRangeList) {
-			if (address >= addressRange.StartAddress && address <= addressRange.EndAddress) {
+			if (LoadAddress >= addressRange.StartAddress && LoadAddress <= addressRange.EndAddress) {
 				addressRangeWriteable = addressRange.Writeable;
 				addressRangeExecutable = addressRange.Executable;
 				break;
@@ -130,6 +140,7 @@ public class ESP32AppMemory {
 			addressRangeWriteable = true;
 			addressRangeExecutable = true;
 		}
-		return (addressRangeWriteable ? 1 : 0) + (addressRangeExecutable ? 2 : 0);
+		int Permissions = (addressRangeWriteable ? 1 : 0) + (addressRangeExecutable ? 2 : 0);
+		return new ESP32AppSegment(LoadAddress, Length, Data, Permissions);
 	}
 }
