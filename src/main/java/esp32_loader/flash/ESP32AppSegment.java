@@ -11,6 +11,13 @@ private class ESP32AddressRange {
 	public int EndAddress;
 	public boolean Writeable;
 	public boolean Executable;
+	
+	public ESP32AddressRange(int s, int e, boolean W, boolean E) {
+		StartAddress = s;
+		EndAddress = e;
+		Writeable = W;
+		Executable = E;
+	}
 }
 
 private class ESP32AddressSpace {
