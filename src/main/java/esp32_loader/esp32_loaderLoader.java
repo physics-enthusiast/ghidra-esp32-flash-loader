@@ -253,8 +253,8 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			while (sc.findWithinHorizon(p, 0) != null) {
 				MatchResult m = sc.match();
 				try {
-					var name = m.group(1);
-					var address = addressFactory.getAddress(m.group(2));
+					var name = m.group(1).trim();
+					var address = addressFactory.getAddress(m.group(2).trim());
 					var function = functionManager.getFunctionAt(address);
 					if (function != null) {
 						var oldName = function.getName();
