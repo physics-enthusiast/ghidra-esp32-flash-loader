@@ -27,9 +27,9 @@ public class ESP32AppImage {
 		var reserved = reader.readNextByteArray(8); // Reserved
 		this.HashAppended = (reader.readNextByte() == 0x01);
 
-		ESP32AddressSpace addressSpace = new ESP32AddressSpace(chipID);
+		ESP32AppMemory addressSpace = new ESP32AppMemory(chipID);
 		for (var x = 0; x < this.SegmentCount; x++) {
-			var seg = new ESP32AppSegment(this, reader, addressSpace);
+			var seg = addressSpace.getSegment(this, reader);
 			Segments.add(seg);
 		}
 
