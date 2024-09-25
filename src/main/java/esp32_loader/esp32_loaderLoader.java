@@ -218,28 +218,28 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		ResourceFile[] ldFileList;
 		switch(chipID) {
 			case 0: // ESP32
-				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32/ld");
+				ldFileDir = Application.getModuleDataSubDirectory(ldFilePath + "esp32/ld");
 				break;
 			case 2: // ESP32-S2
-				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32s2/ld");
+				ldFileDir = Application.getModuleDataSubDirectory(ldFilePath + "esp32s2/ld");
 				break;
 			case 9: // ESP32-S3
-				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32s3/ld");
+				ldFileDir = Application.getModuleDataSubDirectory(ldFilePath + "esp32s3/ld");
 				break;
 			case 12: // ESP32-C2
-				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c2/ld");
+				ldFileDir = Application.getModuleDataSubDirectory(ldFilePath + "esp32c2/ld");
 				break;
 			case 5: // ESP32-C3
-				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c3/ld");
+				ldFileDir = Application.getModuleDataSubDirectory(ldFilePath + "esp32c3/ld");
 				break;
 			case 13: // ESP32-C6
-				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c6/ld");
+				ldFileDir = Application.getModuleDataSubDirectory(ldFilePath + "esp32c6/ld");
 				break;
 			case 20: // ESP32-C61
-				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32c61/ld");
+				ldFileDir = Application.getModuleDataSubDirectory(ldFilePath + "esp32c61/ld");
 				break;
 			case 16: // ESP32-H2
-				ldFileDir = getModuleDataSubDirectory(ldFilePath + "esp32h2/ld");
+				ldFileDir = Application.getModuleDataSubDirectory(ldFilePath + "esp32h2/ld");
 				break;
 			default:
 				throw new UnknownModelException("Unknown ESP32 Chip ID : " + chipID );
@@ -289,26 +289,26 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		ResourceFile svdFile;
 		switch(chipID) {
 			case 0: // ESP32
-				svdFile = getModuleDataFile(svdFileDir + "esp32.svd");
+				svdFile = Application.getModuleDataFile(svdFileDir + "esp32.svd");
 				break;
 			case 2: // ESP32-S2
-				svdFile = getModuleDataFile(svdFileDir + "esp32s2.svd");
+				svdFile = Application.getModuleDataFile(svdFileDir + "esp32s2.svd");
 				break;
 			case 9: // ESP32-S3
-				svdFile = getModuleDataFile(svdFileDir + "esp32s3.svd");
+				svdFile = Application.getModuleDataFile(svdFileDir + "esp32s3.svd");
 				break;
 			case 12: // ESP32-C2
-				svdFile = getModuleDataFile(svdFileDir + "esp32c2.svd");
+				svdFile = Application.getModuleDataFile(svdFileDir + "esp32c2.svd");
 				break;
 			case 5: // ESP32-C3
-				svdFile = getModuleDataFile(svdFileDir + "esp32c3.svd");
+				svdFile = Application.getModuleDataFile(svdFileDir + "esp32c3.svd");
 				break;
 			case 13:
 			case 20: // ESP32-C61
-				svdFile = getModuleDataFile(svdFileDir + "esp32c6.svd");
+				svdFile = Application.getModuleDataFile(svdFileDir + "esp32c6.svd");
 				break;
 			case 16: // ESP32-H2
-				svdFile = getModuleDataFile(svdFileDir + "esp32h2.svd");
+				svdFile = Application.getModuleDataFile(svdFileDir + "esp32h2.svd");
 				break;
 			default:
 				throw new UnknownModelException("Unknown ESP32 Chip ID : " + chipID );
