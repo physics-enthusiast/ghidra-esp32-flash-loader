@@ -19,7 +19,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.regex.*;
+import java.util.regex.Pattern;
+import java.util.regex.MatchResult;
 
 import esp32_loader.flash.ESP32Flash;
 import esp32_loader.flash.ESP32Partition;
