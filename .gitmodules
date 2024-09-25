@@ -8,6 +8,3 @@
 [submodule "data/esp-idf"]
 	path = data/esp-idf
 	url = https://github.com/espressif/esp-idf
-[submodule "jcpp"]
-	path = jcpp
-	url = https://github.com/shevek/jcpp
