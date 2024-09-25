@@ -22,11 +22,11 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.MatchResult;
 
+import esp32_loader.exceptions.UnknownModelException;
 import esp32_loader.flash.ESP32Flash;
 import esp32_loader.flash.ESP32Partition;
 import esp32_loader.flash.ESP32AppImage;
 import esp32_loader.flash.ESP32AppSegment.SegmentType;
-import esp32_loader.flash.UnknownModelException;
 import generic.jar.ResourceFile;
 import ghidra.app.util.MemoryBlockUtils;
 import ghidra.app.util.Option;
