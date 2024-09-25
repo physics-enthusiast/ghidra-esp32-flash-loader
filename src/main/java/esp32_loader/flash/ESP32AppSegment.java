@@ -6,20 +6,14 @@ import java.util.List;
 
 import ghidra.app.util.bin.BinaryReader;
 
-public class UnknownModelException extends Exception { 
-    public UnknownModelException(String errorMessage) {
-        super(errorMessage);
-    }
-}
-
-public class ESP32AddressRange {
+private class ESP32AddressRange {
 	public int StartAddress;
 	public int EndAddress;
 	public boolean Writeable;
 	public boolean Executable;
 }
 
-public class ESP32AddressSpace {
+private class ESP32AddressSpace {
 	private List<ESP32AddressRange> ESP32AddressRangeList = new ArrayList<ESP32AddressRange>();
 	private void SetAddressRangePermissions(int StartAddress, int EndAddress, boolean Writeable, boolean Executable) {
 		ESP32AddressRangeList.add(new ESP32AddressRange(StartAddress, EndAddress, Writeable, Executable));
