@@ -195,13 +195,14 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			program.getSymbolTable().addExternalEntryPoint(api.toAddr(imageToLoad.EntryAddress));
 
 			try {
+				/* Label BootROM Addresses */
 				processLD(program, monitor, imageToLoad.chipID, log);
+				/* Create Peripheral Device Memory Blocks */
+				processSVD(program, api, imageToLoad.chipID, log);
 			} catch (Exception ex) {
 				String exceptionTxt = ex.toString();
 				System.out.println(exceptionTxt);
 			}
-			/* Create Peripheral Device Memory Blocks */
-			processSVD(program, api, imageToLoad.chipID, log);
 
 		} catch (Exception e) {
 			log.appendException(e);
