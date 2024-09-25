@@ -15,7 +15,7 @@ public class ESP32AppImage {
 
 	public ArrayList<ESP32AppSegment> Segments = new ArrayList<ESP32AppSegment>();
 
-	public ESP32AppImage(BinaryReader reader) throws IOException, UnknownModelException {
+	public ESP32AppImage(BinaryReader reader) throws IOException {
 		var magic = reader.readNextByte();
 		this.SegmentCount = reader.readNextByte();
 		var spiByte = reader.readNextByte(); // SPI Byte
@@ -29,7 +29,13 @@ public class ESP32AppImage {
 		var reserved = reader.readNextByteArray(8); // Reserved
 		this.HashAppended = (reader.readNextByte() == 0x01);
 
-		ESP32AppMemory addressSpace = new ESP32AppMemory(chipID);
+		ESP32AppMemory addressSpace
+		try {
+			addressSpace = new ESP32AppMemory(chipID);
+		} catch (UnknownModelException e) {
+			System.out.println("Unknown Chip ID, assuming ESP32");
+			addressSpace = new ESP32AppMemory(0);
+		}
 		for (var x = 0; x < this.SegmentCount; x++) {
 			int LoadAddress = reader.readNextInt();
 			int Length = reader.readNextInt();
