@@ -114,7 +114,7 @@ public class ESP32AddressSpace {
 				throw new UnknownModelException("Unknown ESP32 Chip ID : " + chipID );
 		}
 	}
-	private int GetAddressRangePermissions(int address) {
+	public int GetAddressRangePermissions(int address) {
 		private boolean addressRangeFound = false;
 		private boolean addressRangeWriteable = false;
 		private boolean addressRangeExecutable = false;
@@ -139,13 +139,16 @@ public class ESP32AppSegment {
 	public int LoadAddress;
 	public int Length;
 	public byte[] Data;
-	public int Permissions;
+	public boolean Writeable;
+	public boolean Executable;
 
 	public ESP32AppSegment(ESP32AppImage app, BinaryReader reader, ESP32AddressSpace addressSpace) throws IOException {
 		LoadAddress = reader.readNextInt();
 		Length = reader.readNextInt();
 		Data = reader.readNextByteArray(Length);
-		Permissions = addressSpace.GetAddressRangePermissions(LoadAddress);
+		private int Permissions = addressSpace.GetAddressRangePermissions(LoadAddress);
+		Writeable = (this.Permissions & 1) != 0;
+		Executable = (this.Permissions & 2) != 0;
 	}
 
 	public boolean isRead() {
@@ -153,11 +156,11 @@ public class ESP32AppSegment {
 	}
 
 	public boolean isWrite() {
-		return ((this.Permissions & 1) != 0);
+		return this.Writeable;
 	}
 
 	public boolean isExecute() {
-		return ((this.Permissions & 1) != 0);
+		return this.Executable;
 	}
 
 	public boolean isCodeSegment() {
