@@ -247,7 +247,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		AddressSet addrSet = new AddressSet();
 		for (ResourceFile ldFile : ldFileList) {
 			Scanner sc = new Scanner(ldFile.getInputStream(), "UTF-8");
-			Pattern p = Pattern.compile("PROVIDE \\((.*)=.*0x(.*)\\)");
+			Pattern p = Pattern.compile("(.*)=.*0x(.*)");
 			while (sc.findWithinHorizon(p, 0) != null) {
 				MatchResult m = sc.match();
 				try {
