@@ -125,6 +125,7 @@ public class ESP32AppMemory {
 			if (LoadAddress >= addressRange.StartAddress && LoadAddress <= addressRange.EndAddress) {
 				addressRangeWriteable = addressRange.Writeable;
 				addressRangeExecutable = addressRange.Executable;
+				addressRangeFound = true;
 				break;
 			}
 		}
