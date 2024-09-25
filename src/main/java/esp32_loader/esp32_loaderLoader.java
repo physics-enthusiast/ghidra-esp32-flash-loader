@@ -197,10 +197,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			program.getSymbolTable().addExternalEntryPoint(api.toAddr(imageToLoad.EntryAddress));
 
 			/* Create Peripheral Device Memory Blocks */
-			if (imageToLoad.IsEsp32S2) {
-				log.appendMsg("Process esp32s2 svd");
-			}
-			processSVD(program, api, imageToLoad.IsEsp32S2, log);
+			processSVD(program, api, imageToLoad.chipID, log);
 
 		} catch (Exception e) {
 			log.appendException(e);
@@ -230,33 +227,44 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		}
 	}
 
-	private void processSVD(Program program, FlatProgramAPI api, boolean isESP32S2, MessageLog log) throws Exception {
-		// TODO Auto-generated method stub
-		List<ResourceFile> svdFileList = Application.findFilesByExtensionInMyModule("svd");
-		if (svdFileList.size() > 0) {
-			/* grab the first svd file ... */
-			String svdFile = svdFileList.get(0).getAbsolutePath();
-			boolean isFound = svdFile.indexOf("esp32s2") != -1 ? true : false;
-			if (isESP32S2) {
-				if (!isFound) {
-					svdFile = svdFileList.get(1).getAbsolutePath();
-				}
-			} else {
-				if (isFound) {
-					svdFile = svdFileList.get(1).getAbsolutePath();
-				}
-			}
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder builder = factory.newDocumentBuilder();
+	private void processSVD(Program program, FlatProgramAPI api, short chipID, MessageLog log) throws Exception {
+		var svdFileDir = "svd/svd/";
+		ResourceFile svdFile
+		switch(chipID) { // based on the technical reference manuals of the respective chips
+			case 0: // ESP32
+				svdFile = getModuleDataFile(svdFileDir + "esp32.svd");
+				break
+			case 2: // ESP32-S2
+				svdFile = getModuleDataFile(svdFileDir + "esp32s2.svd");
+				break
+			case 9: // ESP32-S3
+				svdFile = getModuleDataFile(svdFileDir + "esp32s3.svd");
+				break
+			case 12: // ESP32-C2
+				svdFile = getModuleDataFile(svdFileDir + "esp32c2.svd");
+				break
+			case 5: // ESP32-C3
+				svdFile = getModuleDataFile(svdFileDir + "esp32c3.svd");
+				break
+			case 13: // ESP32-C6
+			case 20:
+				svdFile = getModuleDataFile(svdFileDir + "esp32c6.svd");
+				break
+			case 16: // ESP32-H2
+				svdFile = getModuleDataFile(svdFileDir + "esp32h2.svd");
+				break
+			default:
+				throw new UnknownModelException("Unknown ESP32 Chip ID : " + chipID );
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder = factory.newDocumentBuilder();
 
-			Document doc = builder.parse(svdFile);
+		Document doc = builder.parse(svdFile.getAbsolutePath());
 
-			Element root = doc.getDocumentElement();
+		Element root = doc.getDocumentElement();
 
-			NodeList peripherals = root.getElementsByTagName("peripheral");
-			for (var x = 0; x < peripherals.getLength(); x++) {
-				processPeripheral(program, api, (Element) peripherals.item(x), log);
-			}
+		NodeList peripherals = root.getElementsByTagName("peripheral");
+		for (var x = 0; x < peripherals.getLength(); x++) {
+			processPeripheral(program, api, (Element) peripherals.item(x), log);
 		}
 	}
 
