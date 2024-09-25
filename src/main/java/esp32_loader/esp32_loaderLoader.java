@@ -243,7 +243,6 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		}
 		ldFileList = ldFileDir.listFiles();
 		AddressFactory addressFactory = program.getAddressFactory();
-		Namespace namespace = api.createNamespace(null, "ESP32");
 		AddressSet addrSet = new AddressSet();
 		for (ResourceFile ldFile : ldFileList) {
 			Scanner sc = new Scanner(ldFile.getInputStream(), "UTF-8");
