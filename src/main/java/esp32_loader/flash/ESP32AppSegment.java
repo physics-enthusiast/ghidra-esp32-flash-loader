@@ -137,12 +137,17 @@ private class ESP32AddressSpace {
 
 public class ESP32AppSegment {
 
+	public enum SegmentType {
+		ROM, SRAM
+	}
+
 	public int PhysicalOffset;
 	public int LoadAddress;
 	public int Length;
 	public byte[] Data;
 	public boolean Writeable;
 	public boolean Executable;
+	public SegmentType type;
 
 	public ESP32AppSegment(ESP32AppImage app, BinaryReader reader, ESP32AddressSpace addressSpace) throws IOException {
 		LoadAddress = reader.readNextInt();
@@ -151,6 +156,11 @@ public class ESP32AppSegment {
 		int Permissions = addressSpace.GetAddressRangePermissions(LoadAddress);
 		Writeable = (Permissions & 1) != 0;
 		Executable = (Permissions & 2) != 0;
+		if (Writeable) {
+			type = SegmentType.SRAM;
+		} else {
+			type = SegmentType.ROM;
+		}
 	}
 
 	public boolean isRead() {
