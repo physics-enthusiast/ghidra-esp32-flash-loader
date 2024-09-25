@@ -110,6 +110,7 @@ public class ESP32AddressSpace {
 				this.SetAddressRangePermissions(0x5000_0000, 0x5000_0FFF, true, true);
 				// external
 				this.SetAddressRangePermissions(0x4200_0000, 0x42FF_FFFF, true, true);
+				break
 			default:
 				throw new UnknownModelException("Unknown ESP32 Chip ID : " + chipID );
 		}
