@@ -50,10 +50,10 @@ import ghidra.program.model.data.UnsignedLongDataType;
 import ghidra.program.model.lang.CompilerSpecID;
 import ghidra.program.model.lang.LanguageCompilerSpecPair;
 import ghidra.program.model.lang.LanguageID;
-import ghidra.program.model.listing.FunctionManager;
 import ghidra.program.model.listing.Program;
 import ghidra.program.model.mem.MemoryBlock;
 import ghidra.program.model.mem.MemoryConflictException;
+import ghidra.program.model.symbol.Namespace;
 import ghidra.program.model.symbol.SourceType;
 import ghidra.program.model.util.AddressSetPropertyMap;
 import ghidra.program.model.util.CodeUnitInsertionException;
@@ -243,6 +243,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		}
 		ldFileList = ldFileDir.listFiles();
 		AddressFactory addressFactory = program.getAddressFactory();
+		Namespace namespace = api.createNamespace(null, "ESP32")
 		for (ResourceFile ldFile : ldFileList) {
 			Scanner sc = new Scanner(ldFile.getInputStream(), "UTF-8");
 			Pattern p = Pattern.compile("PROVIDE \\((.*)=.*0x(.*)\\)");
@@ -251,15 +252,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				try {
 					var name = m.group(1).trim();
 					var address = addressFactory.getAddress(m.group(2).trim());
-					var function = api.getFunctionAt(address);
-					if (function != null) {
-						var oldName = function.getName();
-						function.setName(name, SourceType.DEFAULT);
-						log.appendMsg(String.format("Renamed function %s to %s at address %s", oldName, name, address));
-					} else {
-						api.createFunction(address, name);
-						log.appendMsg(String.format("Created function %s at address %s", name, address));
-					}
+					api.createLabel(address, name, namespace, true, SourceType.ANALYSIS);
 				} catch (Exception ex) {
 					log.appendException(ex);
 					continue;
