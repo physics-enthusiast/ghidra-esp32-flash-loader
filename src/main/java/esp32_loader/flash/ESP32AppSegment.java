@@ -42,7 +42,7 @@ public class ESP32AddressSpace {
 				this.SetAddressRangePermissions(0x3F40_0000, 0x3F7F_FFFF, false, false);
 				this.SetAddressRangePermissions(0x3F80_0000, 0x3FBF_FFFF, true, false);
 				this.SetAddressRangePermissions(0x400C_2000, 0x40BF_FFFF, true, true);
-				break
+				break;
 			case 2: // ESP32-S2
 				// internal
 				this.SetAddressRangePermissions(0x3FFA_0000, 0x3FFA_FFFF, false, false);
@@ -56,7 +56,7 @@ public class ESP32AddressSpace {
 				this.SetAddressRangePermissions(0x3F00_0000, 0x3F3F_FFFF, true, false);
 				this.SetAddressRangePermissions(0x3F50_0000, 0x3FF7_FFFF, true, false);
 				this.SetAddressRangePermissions(0x4008_0000, 0x407F_FFFF, true, true);
-				break
+				break;
 			case 9: // ESP32-S3
 				// internal
 				this.SetAddressRangePermissions(0x3FF0_0000, 0x3FF1_FFFF, false, false);
@@ -69,7 +69,7 @@ public class ESP32AddressSpace {
 				// external
 				this.SetAddressRangePermissions(0x3C00_0000, 0x3DFF_FFFF, true, false);
 				this.SetAddressRangePermissions(0x4200_0000, 0x43FF_FFFF, true, true);
-				break
+				break;
 			case 12: // ESP32-C2
 				// internal
 				this.SetAddressRangePermissions(0x3FF0_0000, 0x3FF4_FFFF, false, false);
@@ -81,7 +81,7 @@ public class ESP32AddressSpace {
 				// external
 				this.SetAddressRangePermissions(0x3C00_0000, 0x3C3F_FFFF, false, false);
 				this.SetAddressRangePermissions(0x4200_0000, 0x423F_FFFF, true, true);
-				break
+				break;
 			case 5: // ESP32-C3
 				// internal
 				this.SetAddressRangePermissions(0x3FF0_0000, 0x3FF1_FFFF, false, false);
@@ -93,7 +93,7 @@ public class ESP32AddressSpace {
 				// external
 				this.SetAddressRangePermissions(0x3C00_0000, 0x3C7F_FFFF, false, false);
 				this.SetAddressRangePermissions(0x4200_0000, 0x427F_FFFF, true, true);
-				break
+				break;
 			case 13: // ESP32-C6
 			case 20:
 				// internal
@@ -102,7 +102,7 @@ public class ESP32AddressSpace {
 				this.SetAddressRangePermissions(0x5000_0000, 0x5000_3FFF, true, true);
 				// external
 				this.SetAddressRangePermissions(0x4200_0000, 0x42FF_FFFF, true, true);
-				break
+				break;
 			case 16: // ESP32-H2
 				// internal
 				this.SetAddressRangePermissions(0x4000_0000, 0x4001_FFFF, false, true);
@@ -110,20 +110,20 @@ public class ESP32AddressSpace {
 				this.SetAddressRangePermissions(0x5000_0000, 0x5000_0FFF, true, true);
 				// external
 				this.SetAddressRangePermissions(0x4200_0000, 0x42FF_FFFF, true, true);
-				break
+				break;
 			default:
 				throw new UnknownModelException("Unknown ESP32 Chip ID : " + chipID );
 		}
 	}
 	public int GetAddressRangePermissions(int address) {
-		private boolean addressRangeFound = false;
-		private boolean addressRangeWriteable = false;
-		private boolean addressRangeExecutable = false;
+		boolean addressRangeFound = false;
+		boolean addressRangeWriteable = false;
+		boolean addressRangeExecutable = false;
 		for (ESP32AddressRange addressRange : ESP32AddressRangeList) {
 			if (address >= addressRange.StartAddress && address <= addressRange.EndAddress) {
 				addressRangeWriteable = addressRange.Writeable;
 				addressRangeExecutable = addressRange.Executable;
-				break
+				break;
 			}
 		}
 		if (!addressRangeFound) {
@@ -147,7 +147,7 @@ public class ESP32AppSegment {
 		LoadAddress = reader.readNextInt();
 		Length = reader.readNextInt();
 		Data = reader.readNextByteArray(Length);
-		private int Permissions = addressSpace.GetAddressRangePermissions(LoadAddress);
+		int Permissions = addressSpace.GetAddressRangePermissions(LoadAddress);
 		Writeable = (this.Permissions & 1) != 0;
 		Executable = (this.Permissions & 2) != 0;
 	}
