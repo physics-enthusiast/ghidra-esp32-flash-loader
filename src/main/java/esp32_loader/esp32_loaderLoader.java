@@ -153,7 +153,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				var curSeg = imageToLoad.Segments.get(x);
 				var blockName = curSeg.type.name() + "_" + Integer.toHexString(curSeg.LoadAddress);
 
-				fillMemoryBlocks(program, curSeg.LoadAddress, curSeg.Length, curSeg.Data, blockName,
+				fillMemoryBlocks(program, api.toAddr(curSeg.LoadAddress), curSeg.Length, curSeg.Data, blockName,
 						 curSeg.isRead(), curSeg.isWrite(), curSeg.isExecute(), log);
 
 				/* Mark Instruction blocks as code */
