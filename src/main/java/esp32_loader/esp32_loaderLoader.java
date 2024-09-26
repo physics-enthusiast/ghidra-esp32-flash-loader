@@ -155,7 +155,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 
 				var blocks = reserveAddressSpace(program, api.toAddr(curSeg.LoadAddress), curSeg.Length, name, log);
 				initializeMemoryBlocks(program, blocks, (byte) 0x0,
-						       curSeg.isRead(), curSeg.isWrite(), curSeg.isExecute());
+						       curSeg.isRead(), curSeg.isWrite(), curSeg.isExecute(), log);
 
 				/* Mark Instruction blocks as code */
 				if (curSeg.isCodeSegment()) {
@@ -210,10 +210,14 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 	}
 
 	private void initializeMemoryBlocks(Program program, List<MemoryBlock> blocks, byte initialValue,
-					    boolean read, boolean write, boolean execute) {
+					    boolean read, boolean write, boolean execute, MessageLog log) {
 		for (MemoryBlock block : blocks) {
 			if (!block.isInitialized()) {
-				program.getMemory().convertToInitialized(block, initialValue);
+				try {
+					program.getMemory().convertToInitialized(block, initialValue);
+				} catch (Exception ex) {
+					log.appendException(ex);
+				}
 				block.setPermissions(read, write, execute);
 			}
 		}
@@ -287,7 +291,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		var end = addrSet.getMaxAddress();
 		var blocks = reserveAddressSpace(program, start, end.subtract(start), "ROM", log);
 		initializeMemoryBlocks(program, blocks, (byte) 0x0,
-				       true, false, true);
+				       true, false, true, log);
 
 	}
 
