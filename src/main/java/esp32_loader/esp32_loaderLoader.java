@@ -191,8 +191,12 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		AddressSet originalSet = mem.intersect(targetSet);
 		AddressSet newSet = originalSet.xor(targetSet);
 		for (AddressRange addressRange : newSet) {
-			MemoryBlock block = mem.createUninitializedBlock​(name, addressRange.getMinAddress(),
-									  addressRange.getLength(), false);
+			try {
+				MemoryBlock block = mem.createUninitializedBlock​(name, addressRange.getMinAddress(),
+										 addressRange.getLength(), false);
+			} catch (Exception ex) {
+				log.appendException(ex);
+			}
 			block.setPermissions(read, write, execute);
 			block.setSourceName("ESP32 Loader");
 		}
@@ -202,7 +206,11 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				Address blockEnd = block.getEnd();
 				if (targetSet.intersects(blockStart, blockEnd)) {
 					if (!block.isInitialized()) {
-						mem.convertToInitialized(block, (byte) 0x0);
+						try {
+							mem.convertToInitialized(block, (byte) 0x0);
+						} catch (Exception ex) {
+							log.appendException(ex);
+						}
 					}
 					block.setPermissions(read, write, execute);
 					block.setSourceName("ESP32 Loader");
