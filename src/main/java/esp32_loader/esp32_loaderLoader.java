@@ -265,7 +265,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			// 1. <symbol name> = <address>;
 			// 2. PROVIDE ( <symbol name> = <address> );
 			// in such a way that the "PROVIDE"s, brackets, equal signs, and semicolons are removed
-			Pattern p = Pattern.compile("(?:PROVIDE \( |)(.*)=(.*?)(?:\)|);");
+			Pattern p = Pattern.compile("(?:PROVIDE \\( |)(.*)=(.*?)(?:\\)|);");
 			while (sc.findWithinHorizon(p, 0) != null) {
 				MatchResult m = sc.match();
 				try {
