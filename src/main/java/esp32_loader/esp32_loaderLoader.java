@@ -261,13 +261,16 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		AddressSet addrSet = new AddressSet();
 		for (ResourceFile ldFile : ldFileList) {
 			Scanner sc = new Scanner(ldFile.getInputStream(), "UTF-8");
-			Pattern p = Pattern.compile("(.*)=.*0x(.*)");
+			// Match the 2 kinds of .ld patterns:
+			// 1. <symbol name> = <address>;
+			// 2. PROVIDE ( <symbol name> = <address> );
+			// in such a way that the "PROVIDE"s, brackets, equal signs, and semicolons are removed
+			Pattern p = Pattern.compile("(?:PROVIDE \\( |)(.*)=(.*)(?:\\)|);");
 			while (sc.findWithinHorizon(p, 0) != null) {
 				MatchResult m = sc.match();
 				try {
 					var name = m.group(1).trim();
 					var address = addressFactory.getAddress(m.group(2).trim());
-					log.appendMsg(m.group(0));
 					var function = api.getFunctionAt(address);
 					if (function != null) {
 						var oldName = function.getName();
