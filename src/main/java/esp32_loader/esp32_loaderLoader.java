@@ -311,7 +311,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		// initializeMemoryBlocks(program, blocks, (byte) 0x0,
 		//		       true, false, true, log);
 		for (TempFunction function : functions) {
-			api.createFunction(functions.address, functions.name);
+			api.createFunction(function.address, function.name);
 		}
 
 	}
