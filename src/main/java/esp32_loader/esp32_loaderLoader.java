@@ -151,10 +151,11 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 
 			for (var x = 0; x < imageToLoad.SegmentCount; x++) {
 				var curSeg = imageToLoad.Segments.get(x);
-				var blockName = curSeg.type.name() + "_" + Integer.toHexString(curSeg.LoadAddress);
+				var name = curSeg.type.name() + "_" + Integer.toHexString(curSeg.LoadAddress);
 
-				fillMemoryBlocks(program, api.toAddr(curSeg.LoadAddress), curSeg.Length, curSeg.Data, blockName,
-						 curSeg.isRead(), curSeg.isWrite(), curSeg.isExecute(), log);
+				var blocks = reserveAddressSpace(program, api.toAddr(curSeg.LoadAddress), curSeg.Length, name, log);
+				initializeMemoryBlocks(program, blocks, (byte) 0x0,
+						       curSeg.isRead(), curSeg.isWrite(), curSeg.isExecute());
 
 				/* Mark Instruction blocks as code */
 				if (curSeg.isCodeSegment()) {
@@ -184,42 +185,36 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 
 	}
 
-	private void fillMemoryBlocks(Program program, Address start, long length, byte[] source, String name,
-				      boolean read, boolean write, boolean execute, MessageLog log) {
+	private List<MemoryBlock> reserveAddressSpace(Program program, Address start, long length, String name, MessageLog log) {
+		List<MemoryBlock> blocks = new ArrayList<MemoryBlock>();
 		var mem = program.getMemory();
 		AddressSet targetSet = new AddressSet(start, start.add(length));
 		AddressSet originalSet = mem.intersect(targetSet);
 		AddressSet newSet = originalSet.xor(targetSet);
-		for (AddressRange addressRange : newSet) {
+		for (AddressRange newRange : newSet) {
 			try {
-				MemoryBlock block = mem.createUninitializedBlock​(name, addressRange.getMinAddress(),
-										 addressRange.getLength(), false);
-				block.setPermissions(read, write, execute);
-				block.setSourceName("ESP32 Loader");
+				MemoryBlock block = mem.createUninitializedBlock​(name, newRange.getMinAddress(),
+										 newRange.getLength(), false);
 			} catch (Exception ex) {
 				log.appendException(ex);
 			}
 		}
-		if (source != null) {
-			for (MemoryBlock block : mem.getBlocks()) {
-				Address blockStart = block.getStart();
-				Address blockEnd = block.getEnd();
-				if (targetSet.intersects(blockStart, blockEnd)) {
-					if (!block.isInitialized()) {
-						try {
-							mem.convertToInitialized(block, (byte) 0x0);
-						} catch (Exception ex) {
-							log.appendException(ex);
-						}
-					}
-					block.setPermissions(read, write, execute);
-					block.setSourceName("ESP32 Loader");
-				}
+		for (MemoryBlock block : mem.getBlocks()) {
+			Address blockStart = block.getStart();
+			Address blockEnd = block.getEnd();
+			if (targetSet.intersects(blockStart, blockEnd)) {
+				blocks.add(block);
 			}
-			try {
-				mem.setBytes​(start, source);
-			} catch (Exception ex) {
-				log.appendException(ex);
+		}
+		return blocks;
+	}
+
+	private void initializeMemoryBlocks(Program program, List<MemoryBlock> blocks, byte initialValue,
+					    boolean read, boolean write, boolean execute) {
+		for (MemoryBlock block : blocks) {
+			if (!block.isInitialized()) {
+				program.getMemory().convertToInitialized(block, initialValue);
+				block.setPermissions(read, write, execute);
 			}
 		}
 	}
@@ -290,8 +285,10 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		}
 		var start = addrSet.getMinAddress();
 		var end = addrSet.getMaxAddress();
-		fillMemoryBlocks(program, start, end.subtract(start), null, "ROM",
-				 true, false, true, log);
+		var blocks = reserveAddressSpace(program, start, end.subtract(start), "ROM", log);
+		initializeMemoryBlocks(program, blocks, (byte) 0x0,
+				       true, false, true);
+
 	}
 
 	private void processSVD(Program program, FlatProgramAPI api, short chipID, MessageLog log) throws Exception {
