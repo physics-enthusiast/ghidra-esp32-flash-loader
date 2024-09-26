@@ -5,21 +5,20 @@ import esp32_loader.exceptions.UnknownModelException;
 import java.util.ArrayList;
 import java.util.List;
 
-class ESP32AddressRange {
-	public int StartAddress;
-	public int EndAddress;
-	public boolean Writeable;
-	public boolean Executable;
-	
-	public ESP32AddressRange(int s, int e, boolean W, boolean E) {
-		StartAddress = s;
-		EndAddress = e;
-		Writeable = W;
-		Executable = E;
-	}
-}
-
 public class ESP32AppMemory {
+	private class ESP32AddressRange {
+		public int StartAddress;
+		public int EndAddress;
+		public boolean Writeable;
+		public boolean Executable;
+	
+		public ESP32AddressRange(int s, int e, boolean W, boolean E) {
+			StartAddress = s;
+			EndAddress = e;
+			Writeable = W;
+			Executable = E;
+		}
+	}
 	private List<ESP32AddressRange> ESP32AddressRangeList = new ArrayList<ESP32AddressRange>();
 
 	private void SetAddressRangePermissions(int StartAddress, int EndAddress, boolean Writeable, boolean Executable) {
