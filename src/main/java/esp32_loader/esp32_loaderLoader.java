@@ -44,6 +44,7 @@ import ghidra.program.database.mem.FileBytes;
 import ghidra.program.flatapi.FlatProgramAPI;
 import ghidra.program.model.address.AddressFactory;
 import ghidra.program.model.address.AddressOverflowException;
+import ghidra.program.model.address.AddressRange;
 import ghidra.program.model.address.AddressSet;
 import ghidra.program.model.data.DataTypeConflictHandler;
 import ghidra.program.model.data.StructureDataType;
@@ -149,37 +150,10 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 
 			for (var x = 0; x < imageToLoad.SegmentCount; x++) {
 				var curSeg = imageToLoad.Segments.get(x);
+				var blockName = curSeg.type.name() + "_" + Integer.toHexString(curSeg.LoadAddress);
 
-				FileBytes fileBytes = MemoryBlockUtils.createFileBytes(program, new ByteArrayProvider(curSeg.Data),
-						0x00, curSeg.Length, monitor);
-				if (program.getMemory().contains(api.toAddr(curSeg.LoadAddress),
-						api.toAddr(curSeg.LoadAddress + curSeg.Length)) == false) {
-					var blockName = curSeg.type.name() + "_" + Integer.toHexString(curSeg.LoadAddress);
-					var memBlock = program.getMemory().createInitializedBlock(blockName, api.toAddr(curSeg.LoadAddress),
-							fileBytes, 0x00, curSeg.Length, false);
-					memBlock.setPermissions(curSeg.isRead(), curSeg.isWrite(), curSeg.isExecute());
-					memBlock.setSourceName("ESP32 Loader");
-				} else {
-					/* memory block already exists... */
-					MemoryBlock existingBlock = program.getMemory().getBlock(api.toAddr(curSeg.LoadAddress));
-					if (existingBlock != null) {
-						existingBlock.setName(curSeg.type.name() + "_" + Integer.toHexString(curSeg.LoadAddress));
-						if (!existingBlock.isInitialized()) {
-							program.getMemory().convertToInitialized(existingBlock, (byte) 0x0);
-						}
-						try {
-							existingBlock.putBytes(api.toAddr(curSeg.LoadAddress), curSeg.Data);
-						} catch (Exception ex) {
-							log.appendException(ex);
-						}
-						existingBlock.setSourceName("ELF + ESP32 Loader");
-					} else {
-						/*
-						 * whoa, there be dragons here, the block exists but doesn't contain our start
-						 * address... what?
-						 */
-					}
-				}
+				fillMemoryBlocks(program, curSeg.LoadAddress, curSeg.Length, curSeg.Data, blockName,
+						 curSeg.isRead(), curSeg.isWrite(), curSeg.isExecute(), log);
 
 				/* Mark Instruction blocks as code */
 				if (curSeg.isCodeSegment()) {
@@ -207,6 +181,38 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 
 		// TODO: Load the bytes from 'provider' into the 'program'.
 
+	}
+
+	private void fillMemoryBlocks(Program program, Address start, long length, byte[] source, String name,
+				      boolean read, boolean write, boolean execute, MessageLog log) {
+		var mem = program.getMemory();
+		AddressSet targetSet = new AddressSet(start, start.add(length));
+		AddressSet originalSet = mem.intersect(targetSet);
+		AddressSet newSet = originalSet.xor(targetSet);
+		for (AddressRange addressRange : newSet) {
+			MemoryBlock block = mem.createUninitializedBlock​(name, addressRange.getMinAddress(),
+									  addressRange.getLength(), false);
+			block.setPermissions(read, write, execute);
+			block.setSourceName("ESP32 Loader");
+		}
+		if (source != null) {
+			for (MemoryBlock block : mem.getBlocks()) {
+				blockStart = block.getStart();
+				blockEnd = block.getEnd();
+				if (targetSet.intersects(blockStart, blockEnd)) {
+					if (!block.isInitialized()) {
+						mem.convertToInitialized(block, (byte) 0x0);
+					}
+					block.setPermissions(read, write, execute);
+					block.setSourceName("ESP32 Loader");
+				}
+			}
+			try {
+				mem.setBytes​(start, source);
+			} catch (Exception ex) {
+				log.appendException(ex);
+			}
+		}
 	}
 
 	private void processLD(Program program, FlatProgramAPI api, short chipID, MessageLog log) throws Exception {
@@ -256,10 +262,12 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 					if (function != null) {
 						var oldName = function.getName();
 						function.setName(name, SourceType.DEFAULT);
-						log.appendMsg(String.format("Renamed function %s to %s at address %s", oldName, name, address));
+						log.appendMsg(String.format("Renamed function %s to %s at address %s",
+									    oldName, name, address));
 					} else {
 						api.createFunction(address, name);
-						log.appendMsg(String.format("Created function %s at address %s", name, address));
+						log.appendMsg(String.format("Created function %s at address %s",
+									    name, address));
 					}
 					addrSet.add(address);
 				} catch (Exception ex) {
@@ -268,18 +276,10 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				} 
 			}
 		}
-		var mem = program.getMemory();
 		var start = addrSet.getMinAddress();
 		var end = addrSet.getMaxAddress();
-		boolean overlay;
-		if (mem.contains(start, end) == false) {
-			overlay = false;
-		} else {
-			overlay = true;
-		}
-		var memBlock = mem.createUninitializedBlock("ROM", start, end - start, overlay);
-		memBlock.setPermissions(true, false, true);
-		memBlock.setSourceName("ESP32 Loader");
+		fillMemoryBlocks(program, start, end.subtract(start), null, "ROM",
+				 true, false, true, log);
 	}
 
 	private void processSVD(Program program, FlatProgramAPI api, short chipID, MessageLog log) throws Exception {
