@@ -265,7 +265,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			// 1. <symbol name> = <address>;
 			// 2. PROVIDE ( <symbol name> = <address> );
 			// in such a way that the "PROVIDE"s, brackets, equal signs, and semicolons are removed
-			Pattern p = Pattern.compile("(?:PROVIDE \\( |)(.*)=(.*)(?:\\)|);");
+			Pattern p = Pattern.compile("(?:PROVIDE \( |)(.*)=(.*?)(?:\)|);");
 			while (sc.findWithinHorizon(p, 0) != null) {
 				MatchResult m = sc.match();
 				try {
@@ -279,13 +279,11 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 									    oldName, name, address));
 					} else {
 						api.createFunction(address, name);
-						log.appendMsg(String.format("Created function %s at address %s",
-									    name, address));
 					}
 					addrSet.add(address);
 				} catch (Exception ex) {
-					log.appendMsg(m.group(0));
 					log.appendException(ex);
+					log.appendMsg(String.format("Caused by match:", m.group(0)));
 					continue;
 				} 
 			}
