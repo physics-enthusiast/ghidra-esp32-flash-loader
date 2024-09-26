@@ -267,6 +267,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				try {
 					var name = m.group(1).trim();
 					var address = addressFactory.getAddress(m.group(2).trim());
+					log.appendMsg(m.group(0));
 					var function = api.getFunctionAt(address);
 					if (function != null) {
 						var oldName = function.getName();
