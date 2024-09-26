@@ -284,6 +284,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 					}
 					addrSet.add(address);
 				} catch (Exception ex) {
+					log.appendMsg(m.group(0));
 					log.appendException(ex);
 					continue;
 				} 
