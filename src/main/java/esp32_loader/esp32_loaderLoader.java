@@ -228,6 +228,16 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		}
 	}
 
+	private class TempFunction {
+		public Address address;
+		public String name;
+	
+		public TempFunction(Address a, String n) {
+			address = a;
+			name = n;
+		}
+	}
+
 	private void processLD(Program program, FlatProgramAPI api, short chipID, MessageLog log) throws Exception {
 		var ldFilePath = "esp-idf/components/esp_rom/";
 		ResourceFile ldFileDir;
@@ -263,6 +273,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		ldFileList = ldFileDir.listFiles();
 		AddressFactory addressFactory = program.getAddressFactory();
 		AddressSet addrSet = new AddressSet();
+		List<TempFunction> functions = new ArrayList<TempFunction>();
 		for (ResourceFile ldFile : ldFileList) {
 			Scanner sc = new Scanner(ldFile.getInputStream(), "UTF-8");
 			// Match the 2 kinds of .ld patterns:
@@ -282,7 +293,9 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 						log.appendMsg(String.format("Renamed function %s to %s at address %s",
 									    oldName, name, address));
 					} else {
-						api.createFunction(address, name);
+						// this might be at an address without a memory block yet,
+						// so store the address and name for after we make one
+						functions.add(new TempFunction(address, name));
 					}
 					addrSet.add(address);
 				} catch (Exception ex) {
@@ -295,8 +308,11 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		var start = addrSet.getMinAddress();
 		var end = addrSet.getMaxAddress();
 		var blocks = reserveAddressSpace(program, start, end.subtract(start), "ROM", log);
-		initializeMemoryBlocks(program, blocks, (byte) 0x0,
-				       true, false, true, log);
+		// initializeMemoryBlocks(program, blocks, (byte) 0x0,
+		//		       true, false, true, log);
+		for (TempFunction function : functions) {
+			api.createFunction(functions.address, functions.name);
+		}
 
 	}
 
