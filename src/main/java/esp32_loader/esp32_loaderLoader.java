@@ -194,11 +194,11 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			try {
 				MemoryBlock block = mem.createUninitializedBlock​(name, addressRange.getMinAddress(),
 										 addressRange.getLength(), false);
+				block.setPermissions(read, write, execute);
+				block.setSourceName("ESP32 Loader");
 			} catch (Exception ex) {
 				log.appendException(ex);
 			}
-			block.setPermissions(read, write, execute);
-			block.setSourceName("ESP32 Loader");
 		}
 		if (source != null) {
 			for (MemoryBlock block : mem.getBlocks()) {
