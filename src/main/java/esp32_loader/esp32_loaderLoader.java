@@ -42,6 +42,7 @@ import ghidra.framework.model.DomainObject;
 import ghidra.framework.store.LockException;
 import ghidra.program.database.mem.FileBytes;
 import ghidra.program.flatapi.FlatProgramAPI;
+import ghidra.program.model.address.Address;
 import ghidra.program.model.address.AddressFactory;
 import ghidra.program.model.address.AddressOverflowException;
 import ghidra.program.model.address.AddressRange;
@@ -197,8 +198,8 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		}
 		if (source != null) {
 			for (MemoryBlock block : mem.getBlocks()) {
-				blockStart = block.getStart();
-				blockEnd = block.getEnd();
+				Address blockStart = block.getStart();
+				Address blockEnd = block.getEnd();
 				if (targetSet.intersects(blockStart, blockEnd)) {
 					if (!block.isInitialized()) {
 						mem.convertToInitialized(block, (byte) 0x0);
