@@ -8,3 +8,6 @@
 [submodule "data/esp-idf"]
 	path = data/esp-idf
 	url = https://github.com/espressif/esp-idf
+[submodule "data/esptool"]
+	path = data/esptool
+	url = https://github.com/espressif/esptool
