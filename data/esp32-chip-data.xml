@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<esp32>
+  <chip id="0">
+    <model>esp32</model>
+    <submodel>esp32</submodel>
+    <processor>Xtensa:LE:32:default</processor>
+  </chip>
+  <chip id="2">
+    <model>esp32s2</model>
+    <submodel>esp32s2</submodel>
+    <processor>Xtensa:LE:32:default</processor>
+  </chip>
+  <chip id="5">
+    <model>esp32c3</model>
+    <submodel>esp32c3</submodel>
+    <processor>RISCV:LE:32:default</processor>
+  </chip>
+  <chip id="9">
+    <model>esp32s3</model>
+    <submodel>esp32s3</submodel>
+    <processor>Xtensa:LE:32:default</processor>
+  </chip>
+  <chip id="12">
+    <model>esp32c2</model>
+    <submodel>esp32c2</submodel>
+    <processor>RISCV:LE:32:default</processor>
+  </chip>
+  <chip id="13">
+    <model>esp32c6</model>
+    <submodel>esp32c6</submodel>
+    <processor>RISCV:LE:32:default</processor>
+  </chip>
+  <chip id="16">
+    <model>esp32h2</model>
+    <submodel>esp32h2</submodel>
+    <processor>RISCV:LE:32:default</processor>
+  </chip>
+  <chip id="20">
+    <model>esp32c6</model>
+    <submodel>esp32c61</submodel>
+    <processor>RISCV:LE:32:default</processor>
+  </chip>
+</esp32>
