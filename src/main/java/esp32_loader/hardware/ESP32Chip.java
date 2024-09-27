@@ -8,12 +8,20 @@ import ghidra.framework.Application;
 
 public class ESP32Chip {
 
-	public String chipModel;
-	public String chipSubmodel;
-	public String chipProcessor;
+	public class ChipData {
+		public String chipModel;
+		public String chipSubmodel;
+		public String chipProcessor;
+	}
+	
+	public ChipData chipData;
 	public boolean isApproximation;
 
 	public ESP32Chip(short chipID) {
+		String chipModel;
+		String chipSubmodel;
+		String chipProcessor;
+	
 		Resourcefile chipDatabase = Application.getModuleDataFile("esp32-chip-data.xml");
 	
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -41,5 +49,6 @@ public class ESP32Chip {
 		chipSubmodel = (String) chipInfo.getElementsByTagName("submodel");
 		chipProcessor = (String) chipInfo.getElementsByTagName("processor");
 		isApproximation = (newDiff == 0);
+		chipData = new ChipData(chipModel, chipSubmodel, chipProcessor);
 	}
 }
