@@ -73,10 +73,6 @@ public class ESP32ChipMappings {
 		}
 	}
 
-	public ESP32ChipMappings() { // fallback null initialization
-		chipAddressRangesList = new ArrayList<ESP32ChipAddressRange>();
-	}
-
 	public ESP32ChipMappings(ChipData chipData) throws Exception {
 		ResourceFile pyFile = Application.getModuleDataFile("esptool/targets/" + chipData.Submodel + ".py");
 		Scanner sc = new Scanner(pyFile.getInputStream(), "UTF-8");
@@ -125,6 +121,10 @@ public class ESP32ChipMappings {
 		for (ESP32ChipAddressRange addressRange : getBasicBounds(chipData.Submodel)) {
 			chipAddressRangesList.add(addressRange);
 		}
+	}
+
+	public ESP32ChipMappings() { // fallback null initialization
+		chipAddressRangesList = new ArrayList<ESP32ChipAddressRange>();
 	}
 
 	public String getSegmentType(int address) {
