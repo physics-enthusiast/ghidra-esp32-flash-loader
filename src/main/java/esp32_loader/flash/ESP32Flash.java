@@ -1,13 +1,15 @@
 package esp32_loader.flash;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import ghidra.app.util.bin.BinaryReader;
 
 public class ESP32Flash {
-	public ESP32AppImage SecondaryBootloader;
+	// public ESP32AppImage SecondaryBootloader;
 	public ArrayList<ESP32Partition> Partitions = new ArrayList<ESP32Partition>();
+	public short chipID;
 
 	public ESP32Flash(BinaryReader reader) throws IOException {
 
@@ -15,6 +17,7 @@ public class ESP32Flash {
 		byte[] skipped = reader.readNextByteArray(0x1000);
 		var idx1 = reader.getPointerIndex();
 		byte[] bootLoader = reader.readNextByteArray(0x7000);
+		chipID = ByteBuffer.wrap(bootLoader, 12, 2).short;
 
 		var idx2 = reader.getPointerIndex();
 		/* should be at the partition table now */
