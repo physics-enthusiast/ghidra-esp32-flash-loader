@@ -121,4 +121,13 @@ public class ESP32ChipMappings {
 			chipAddressRangesList.add(addressRange);
 		}
 	}
+
+	public String getSegmentType(int address) {
+		for (ESP32ChipAddressRange addressRange : chipAddressRangesList) {
+			if (address >= addressRange.start && address <= addressRange.end) {
+				return addressRange.name;
+			}
+		}
+		return "IRAM"; // i.e. generic RWX
+	}
 } 
