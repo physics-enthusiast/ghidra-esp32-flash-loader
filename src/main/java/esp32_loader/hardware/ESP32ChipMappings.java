@@ -72,6 +72,9 @@ public class ESP32ChipMappings {
 		}
 	}
 
+	public ESP32ChipMappings() { // fallback null initialization
+	}
+
 	public ESP32ChipMappings(ChipData chipData) throws Exception {
 		ResourceFile pyFile = Application.getModuleDataFile("esptool/targets/" + chipData.Submodel + ".py");
 		Scanner sc = new Scanner(pyFile.getInputStream(), "UTF-8");
