@@ -18,37 +18,44 @@ public class ESP32Chip {
 	public boolean isApproximation;
 
 	public ESP32Chip(short chipID) {
-		String chipModel;
-		String chipSubmodel;
-		String chipProcessor;
+		try {
+			String chipModel;
+			String chipSubmodel;
+			String chipProcessor;
+		
+			Resourcefile chipDatabase = Application.getModuleDataFile("esp32-chip-data.xml");
+		
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document doc = builder.parse(chipDatabase.getInputStream());
 	
-		Resourcefile chipDatabase = Application.getModuleDataFile("esp32-chip-data.xml");
+			Element root = doc.getDocumentElement();
 	
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder builder = factory.newDocumentBuilder();
-		Document doc = builder.parse(chipDatabase.getInputStream());
-
-		Element root = doc.getDocumentElement();
-
-		NodeList chipList = root.getElementsByTagName("chip");
-		Element chipInfo = (Element) chipList.item(0);
-		int diff = chipID;
-		for (var x = 0; x < chipList.getLength(); x++) {
-			Node chipNode = chipList.item(i);
-			Element chipElement = (Element) chipNode;
-			int newDiff = Math.abs(short.valueOf(chipElement.getAttribute("id")) - chipID);
-			if (newDiff < diff) {
-				chipInfo = chipElement;
-				diff = newDiff;
+			NodeList chipList = root.getElementsByTagName("chip");
+			Element chipInfo = (Element) chipList.item(0);
+			int diff = chipID;
+			for (var x = 0; x < chipList.getLength(); x++) {
+				Node chipNode = chipList.item(i);
+				Element chipElement = (Element) chipNode;
+				int newDiff = Math.abs(short.valueOf(chipElement.getAttribute("id")) - chipID);
+				if (newDiff < diff) {
+					chipInfo = chipElement;
+					diff = newDiff;
+				}
+				if (newDiff == 0) {
+					break;
+				}
 			}
-			if (newDiff == 0) {
-				break;
-			}
+			chipModel = (String) chipInfo.getElementsByTagName("model");
+			chipSubmodel = (String) chipInfo.getElementsByTagName("submodel");
+			chipProcessor = (String) chipInfo.getElementsByTagName("processor");
+			chipData = new ChipData(chipModel, chipSubmodel, chipProcessor);
+			isApproximation = (newDiff == 0);
+		} catch (Exception e) {
+			String exceptionTxt = e.toString();
+			System.out.println(exceptionTxt);
+			chipData = new ChipData("esp32", "esp32", "Xtensa:LE:32:default");
+			isApproximation = true;
 		}
-		chipModel = (String) chipInfo.getElementsByTagName("model");
-		chipSubmodel = (String) chipInfo.getElementsByTagName("submodel");
-		chipProcessor = (String) chipInfo.getElementsByTagName("processor");
-		isApproximation = (newDiff == 0);
-		chipData = new ChipData(chipModel, chipSubmodel, chipProcessor);
 	}
 }
