@@ -131,4 +131,12 @@ public class ESP32App {
 			reader.readNextByteArray(0x20); // hash
 		}
 	}
+
+	public ESP32App() { // fallback null initialization
+		SegmentCount = 0;
+		EntryAddress = 0;
+		HashAppended = false;
+		chipID = 0;
+		chip = new ESP32Chip();
+	}
 }
