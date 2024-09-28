@@ -74,6 +74,7 @@ public class ESP32ChipMappings {
 	}
 
 	public ESP32ChipMappings() { // fallback null initialization
+		chipAddressRangesList = new ArrayList<ESP32ChipAddressRange>();
 	}
 
 	public ESP32ChipMappings(ChipData chipData) throws Exception {
