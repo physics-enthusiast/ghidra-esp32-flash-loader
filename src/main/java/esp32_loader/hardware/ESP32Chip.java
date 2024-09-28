@@ -12,6 +12,12 @@ public class ESP32Chip {
 		public String chipModel;
 		public String chipSubmodel;
 		public String chipProcessor;
+
+		public ChipData(String chipModel, String chipSubmodel, String chipProcessor) {
+			this.chipModel = chipModel;
+			this.chipSubmodel = chipSubmodel;
+			this.chipProcessor = chipProcessor;
+		}
 	}
 	
 	public ChipData chipData;
