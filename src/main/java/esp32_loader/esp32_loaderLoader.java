@@ -70,7 +70,7 @@ import javax.xml.parsers.*;
  */
 public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 	ESP32Flash parsedFlash = null;
-	ESP32AppImage parsedAppImage = null;
+	ESP32App parsedAppImage = null;
 
 	@Override
 	public String getName() {
@@ -108,7 +108,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				if ((reader.readByte(0x00) & 0xFF) == 0xE9) {
 					/* App image magic is first byte */
 					try {
-						parsedAppImage = new ESP32AppImage(reader);
+						parsedAppImage = new ESP32App(reader);
 						String arch = parsedAppImage.chipData.chipProcessor;
 						loadSpecs.add(new LoadSpec(this, 0, new LanguageCompilerSpecPair(
 								new LanguageID(arch), new CompilerSpecID("default")), true));
@@ -126,7 +126,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			TaskMonitor monitor, MessageLog log) throws CancelledException, IOException {
 
 		FlatProgramAPI api = new FlatProgramAPI(program);
-		ESP32AppImage imageToLoad = null;
+		ESP32App imageToLoad = null;
 		if (parsedAppImage != null) {
 			imageToLoad = parsedAppImage;
 		} else {
@@ -141,13 +141,14 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				imageToLoad = part.ParseAppImage();
 			} catch (Exception ex) {
 				log.appendException(ex);
+				imageToLoad = ESP32App();
 			}
 		}
-		if (imageToLoad) {
-			var chipData = imageToLoad.chip.chipData;
-			if (chipData.isApproximation) {
-				log.appendMsg("Warning! Unknown chip ID in firmware image, guessing " + chipData.Submodel);
-			}
+
+		var chip = imageToLoad.chip
+		var chipData = chip.chipData;
+		if (chipData.isApproximation) {
+			log.appendMsg("Warning! Unknown chip ID in firmware image, guessing " + chipData.Submodel);
 		}
 
 		try {
@@ -173,25 +174,42 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				if (curSeg.isCodeSegment()) {
 					codeProp.add(api.toAddr(curSeg.LoadAddress), api.toAddr(curSeg.LoadAddress + curSeg.Length));
 				}
-
 			}
-
 			/* set the entry point */
 			program.getSymbolTable().addExternalEntryPoint(api.toAddr(imageToLoad.EntryAddress));
-
-			try {
-				/* Label BootROM Addresses */
-				processLD(program, api, imageToLoad.chipID, log);
-				/* Create Peripheral Device Memory Blocks */
-				processSVD(program, api, imageToLoad.chipID, log);
-			} catch (Exception ex) {
-				String exceptionTxt = ex.toString();
-				System.out.println(exceptionTxt);
-			}
-
 		} catch (Exception e) {
 			log.appendException(e);
 		}
+
+		try {
+			for (var peripheral : chip.chipPeripherals.chipPeripheralsList) {
+				registerPeripheralBlock(program, api, peripheral.baseAddr, peripheral.baseAddr + peripheral.size - 1,
+							peripheral.peripheralName);
+				var dtm = program.getDataTypeManager();
+				var space = program.getAddressFactory().getDefaultAddressSpace();
+				var listing = program.getListing();
+				var symtbl = program.getSymbolTable();
+				var namespace = symtbl.getNamespace("Peripherals", null);
+				if (namespace == null) {
+					namespace = program.getSymbolTable().createNameSpace(null, "Peripherals", SourceType.ANALYSIS);
+				}
+
+				var addr = space.getAddress(peripheral.baseAddr);
+				dtm.addDataType(peripheral.struct, DataTypeConflictHandler.REPLACE_HANDLER);
+				listing.createData(addr, peripheral.struct);
+				symtbl.createLabel(addr, peripheral.peripheralName, namespace, SourceType.USER_DEFINED);
+			}
+		} catch (Exception ex) {
+			log.appendException(e);
+		}
+		try {
+			/* Label BootROM Addresses */
+			processLD(program, api, imageToLoad.chipID, log);
+		} catch (Exception ex) {
+			log.appendException(e);
+		}
+
+
 
 		// TODO: Load the bytes from 'provider' into the 'program'.
 
@@ -235,6 +253,15 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		}
 	}
 
+	private void registerPeripheralBlock(Program program, FlatProgramAPI api, int startAddr, int endAddr, String name)
+			throws LockException, DuplicateNameException, MemoryConflictException, AddressOverflowException {
+		// TODO Auto-generated method stub
+		var block = program.getMemory().createUninitializedBlock(name, api.toAddr(startAddr), endAddr - startAddr + 1,
+				false);
+		block.setRead(true);
+		block.setWrite(true);
+	}
+	
 	private class TempFunction {
 		public Address address;
 		public String name;
@@ -321,103 +348,6 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			api.createFunction(function.address, function.name);
 		}
 
-	}
-
-	private void processSVD(Program program, FlatProgramAPI api, short chipID, MessageLog log) throws Exception {
-		var svdFileDir = "svd/svd/";
-		ResourceFile svdFile;
-		switch(chipID) {
-			case 0: // ESP32
-				svdFile = Application.getModuleDataFile(svdFileDir + "esp32.svd");
-				break;
-			case 2: // ESP32-S2
-				svdFile = Application.getModuleDataFile(svdFileDir + "esp32s2.svd");
-				break;
-			case 9: // ESP32-S3
-				svdFile = Application.getModuleDataFile(svdFileDir + "esp32s3.svd");
-				break;
-			case 12: // ESP32-C2
-				svdFile = Application.getModuleDataFile(svdFileDir + "esp32c2.svd");
-				break;
-			case 5: // ESP32-C3
-				svdFile = Application.getModuleDataFile(svdFileDir + "esp32c3.svd");
-				break;
-			case 13:
-			case 20: // ESP32-C61
-				svdFile = Application.getModuleDataFile(svdFileDir + "esp32c6.svd");
-				break;
-			case 16: // ESP32-H2
-				svdFile = Application.getModuleDataFile(svdFileDir + "esp32h2.svd");
-				break;
-			default:
-				throw new UnknownModelException("Unknown ESP32 Chip ID : " + chipID );
-		}
-
-
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder builder = factory.newDocumentBuilder();
-
-		Document doc = builder.parse(svdFile.getInputStream());
-
-		Element root = doc.getDocumentElement();
-
-		NodeList peripherals = root.getElementsByTagName("peripheral");
-		for (var x = 0; x < peripherals.getLength(); x++) {
-			processPeripheral(program, api, (Element) peripherals.item(x), log);
-		}
-	}
-
-	private void processPeripheral(Program program, FlatProgramAPI api, Element peripheral, MessageLog log)
-			throws DuplicateNameException, InvalidInputException, CodeUnitInsertionException, LockException,
-			MemoryConflictException, AddressOverflowException {
-		String baseAddrString = ((Element) (peripheral.getElementsByTagName("baseAddress").item(0))).getTextContent();
-		int baseAddr = Integer.decode(baseAddrString);
-
-		String peripheralName = ((Element) (peripheral.getElementsByTagName("name").item(0))).getTextContent();
-		Element addressBlock = (Element) peripheral.getElementsByTagName("addressBlock").item(0);
-		int size = Integer.decode(addressBlock.getElementsByTagName("size").item(0).getTextContent());
-
-		registerPeripheralBlock(program, api, baseAddr, baseAddr + size - 1, peripheralName);
-
-		StructureDataType struct = new StructureDataType(peripheralName, size);
-
-		NodeList registers = peripheral.getElementsByTagName("register");
-
-		try {
-			for (var x = 0; x < registers.getLength(); x++) {
-				Element register = (Element) registers.item(x);
-				String registerName = ((Element) (register.getElementsByTagName("name").item(0))).getTextContent();
-				String offsetString = ((Element) (register.getElementsByTagName("addressOffset").item(0))).getTextContent();
-				int offsetValue = Integer.decode(offsetString);
-				struct.replaceAtOffset(offsetValue, new UnsignedLongDataType(), 4, registerName, "");
-
-			}
-		} catch (Exception e) {
-			log.appendException(e);
-		}
-
-		var dtm = program.getDataTypeManager();
-		var space = program.getAddressFactory().getDefaultAddressSpace();
-		var listing = program.getListing();
-		var symtbl = program.getSymbolTable();
-		var namespace = symtbl.getNamespace("Peripherals", null);
-		if (namespace == null) {
-			namespace = program.getSymbolTable().createNameSpace(null, "Peripherals", SourceType.ANALYSIS);
-		}
-
-		var addr = space.getAddress(baseAddr);
-		dtm.addDataType(struct, DataTypeConflictHandler.REPLACE_HANDLER);
-		listing.createData(addr, struct);
-		symtbl.createLabel(addr, peripheralName, namespace, SourceType.USER_DEFINED);
-	}
-
-	private void registerPeripheralBlock(Program program, FlatProgramAPI api, int startAddr, int endAddr, String name)
-			throws LockException, DuplicateNameException, MemoryConflictException, AddressOverflowException {
-		// TODO Auto-generated method stub
-		var block = program.getMemory().createUninitializedBlock(name, api.toAddr(startAddr), endAddr - startAddr + 1,
-				false);
-		block.setRead(true);
-		block.setWrite(true);
 	}
 
 	@Override
