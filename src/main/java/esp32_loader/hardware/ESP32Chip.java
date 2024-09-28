@@ -21,6 +21,7 @@ public class ESP32Chip {
 	}
 	
 	public ChipData chipData;
+	public ESP32ChipMappings chipMappings;
 	public boolean isApproximation;
 
 	public ESP32Chip(short chipID) {
@@ -63,5 +64,16 @@ public class ESP32Chip {
 			chipData = new ChipData("esp32", "esp32", "Xtensa:LE:32:default");
 			isApproximation = true;
 		}
+		try {
+			chipMappings = new ESP32ChipMappings(chipData);
+		} catch (Exception e) {
+			String exceptionTxt = e.toString();
+			System.out.println(exceptionTxt);
+			chipMappings = new ESP32ChipMappings();
+		}
+	}
+
+	public String getSegmentType(int address) {
+		return this.chipMappings.getSegmentType(address);
 	}
 }
