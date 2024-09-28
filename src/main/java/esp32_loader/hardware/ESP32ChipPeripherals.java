@@ -47,10 +47,6 @@ public class ESP32ChipPeripherals {
 		chipPeripheralsList.add(new ESP32ChipPeripheral(baseAddr, peripheralName, struct, size));
 	}
 
-	public ESP32ChipPeripherals() { // fallback null initialization
-		chipPeripheralsList = new ArrayList<ESP32ChipPeripheral>();
-	}
-
 	public ESP32ChipPeripherals(ChipData chipData) throws Exception {
 		ResourceFile svdFile = Application.getModuleDataFile("svd/svd/" + chipData.Model + ".svd");
 
@@ -66,5 +62,9 @@ public class ESP32ChipPeripherals {
 		for (var x = 0; x < peripherals.getLength(); x++) {
 			processPeripheral((Element) peripherals.item(x));
 		}
+	}
+
+	public ESP32ChipPeripherals() { // fallback null initialization
+		chipPeripheralsList = new ArrayList<ESP32ChipPeripheral>();
 	}
 } 
