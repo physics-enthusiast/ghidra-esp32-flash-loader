@@ -11,6 +11,7 @@ public class ESP32App {
 	public byte SegmentCount;
 	public int EntryAddress;
 	public boolean HashAppended;
+	public short chipID;
 	public ESP32Chip chip;
 
 	public class ESP32AppSegment {
