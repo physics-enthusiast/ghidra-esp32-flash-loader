@@ -107,7 +107,7 @@ public class ESP32ChipMappings {
 			// (e.g. "RTC_IRAM") > less specific (e.g. "IRAM")
 			String[] typePrecedence = {"RTC_IRAM", "DIRAM_IRAM", "RTC_DATA", "CACHE_PRO", "CACHE_APP",
 						   "IRAM", "IROM_MASK", "IROM", "RTC_DRAM", "DIRAM_DRAM","EXTRAM_DATA",
-						   "DRAM", "DROM_MASK", "DROM", "MEM_INTERNAL", "MEM_INTERNAL2"}
+						   "DRAM", "DROM_MASK", "DROM", "MEM_INTERNAL", "MEM_INTERNAL2"};
 			for (String name : typePrecedence) {
 				if (chipAddressRangesDict.containsKey(name)) {
 					for (ESP32ChipAddressRange addressRange : chipAddressRangesDict.get(name)) {
