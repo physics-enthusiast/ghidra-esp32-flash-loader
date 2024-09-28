@@ -22,11 +22,10 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.MatchResult;
 
-import esp32_loader.exceptions.UnknownModelException;
 import esp32_loader.flash.ESP32Flash;
 import esp32_loader.flash.ESP32Partition;
-import esp32_loader.flash.ESP32AppImage;
-import esp32_loader.flash.ESP32AppSegment.SegmentType;
+import esp32_loader.flash.ESP32App;
+import esp32_loader.hardware.ESP32Chip;
 import generic.jar.ResourceFile;
 import ghidra.app.util.MemoryBlockUtils;
 import ghidra.app.util.Option;
@@ -99,8 +98,9 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				try {
 					/* parse the flash... */
 					parsedFlash = new ESP32Flash(reader);
+					String arch = ESP32Chip.lookup(parsedFlash.chipID).chipProcessor;
 					loadSpecs.add(new LoadSpec(this, 0, new LanguageCompilerSpecPair(
-							new LanguageID("Xtensa:LE:32:default"), new CompilerSpecID("default")), true));
+							new LanguageID(arch), new CompilerSpecID("default")), true));
 				} catch (Exception ex) {
 				}
 			} else {
@@ -109,8 +109,9 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 					/* App image magic is first byte */
 					try {
 						parsedAppImage = new ESP32AppImage(reader);
+						String arch = parsedAppImage.chipData.chipProcessor;
 						loadSpecs.add(new LoadSpec(this, 0, new LanguageCompilerSpecPair(
-								new LanguageID("Xtensa:LE:32:default"), new CompilerSpecID("default")), true));
+								new LanguageID(arch), new CompilerSpecID("default")), true));
 					} catch (Exception ex) {
 					}
 				}
@@ -142,6 +143,12 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				log.appendException(ex);
 			}
 		}
+		if (imageToLoad) {
+			var chipData = imageToLoad.chip.chipData;
+			if (chipData.isApproximation) {
+				log.appendMsg("Warning! Unknown chip ID in firmware image, guessing " + chipData.Submodel);
+			}
+		}
 
 		try {
 			AddressSetPropertyMap codeProp = program.getAddressSetPropertyMap("CodeMap");
@@ -151,7 +158,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 
 			for (var x = 0; x < imageToLoad.SegmentCount; x++) {
 				var curSeg = imageToLoad.Segments.get(x);
-				var name = curSeg.type.name() + "_" + Integer.toHexString(curSeg.LoadAddress);
+				var name = curSeg.Name + "_" + Integer.toHexString(curSeg.LoadAddress);
 
 				var blocks = reserveAddressSpace(program, api.toAddr(curSeg.LoadAddress), curSeg.Length, name, log);
 				initializeMemoryBlocks(program, blocks, (byte) 0x0,
@@ -411,13 +418,6 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				false);
 		block.setRead(true);
 		block.setWrite(true);
-
-		/*
-		 * var memBlock = program.getMemory().createInitializedBlock(curSeg.SegmentName
-		 * + "_" + Integer.toHexString(curSeg.LoadAddress),
-		 * api.toAddr(curSeg.LoadAddress), fileBytes, 0x00, curSeg.Length, false);
-		 * memBlock.setPermissions(curSeg.IsRead, curSeg.IsWrite, curSeg.IsExecute);
-		 */
 	}
 
 	@Override
