@@ -137,6 +137,6 @@ public class ESP32App {
 		EntryAddress = 0;
 		HashAppended = false;
 		chipID = 0;
-		chip = new ESP32Chip();
+		chip = new ESP32Chip(0);
 	}
 }
