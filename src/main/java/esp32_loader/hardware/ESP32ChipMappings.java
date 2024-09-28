@@ -3,6 +3,7 @@ package esp32_loader.hardware;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,10 +19,10 @@ public class ESP32ChipMappings {
 		public int end;
 		public String name;
 
-		public ESP32ChipAddressRange (int s, int e, String n) {
-			start = s;
-			end = e;
-			name = n;
+		public ESP32ChipAddressRange(int start, int end, String name) {
+			this.start = start;
+			this.end = end;
+			this.name = name;
 		}
 	}
 
