@@ -62,8 +62,6 @@ import ghidra.util.exception.CancelledException;
 import ghidra.util.exception.DuplicateNameException;
 import ghidra.util.exception.InvalidInputException;
 import ghidra.util.task.TaskMonitor;
-import org.w3c.dom.*;
-import javax.xml.parsers.*;
 
 /**
  * TODO: Provide class-level documentation that describes what this loader does.
