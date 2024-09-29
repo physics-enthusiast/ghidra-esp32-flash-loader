@@ -220,7 +220,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 							log.appendMsg(String.format("Renamed function %s to %s at address %s",
 										    oldName, name, address));
 						} else {
-							api.createFunction(function.address, function.name);
+							api.createFunction(address, function.name);
 						}
 					} catch (Exception ex) {
 						log.appendException(ex);
