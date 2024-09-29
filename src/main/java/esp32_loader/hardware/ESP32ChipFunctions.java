@@ -47,7 +47,7 @@ public class ESP32ChipFunctions {
 			for (ResourceFile headerFile : includeDir.listFiles()) {
 				String name = headerFile.getName();
 				if ( name.substring(Math.max(name.length() - 2, 0)) == ".h" && !filenameList.contains(name)) {
-					filenameList.add(name);
+					filenameList.add(headerFile.getAbsolutePath());
 				}
 			}
 			includePathList.add(includeDir.getAbsolutePath());
