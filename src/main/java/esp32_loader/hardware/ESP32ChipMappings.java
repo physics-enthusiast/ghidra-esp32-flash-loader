@@ -14,21 +14,21 @@ import ghidra.framework.Application;
 
 public class ESP32ChipMappings {
 
-	private class ESP32ChipAddressRange {
+	private class ESP32ChipMapping {
 		public int start;
 		public int end;
 		public String name;
 
-		public ESP32ChipAddressRange(int start, int end, String name) {
+		public ESP32ChipMapping(int start, int end, String name) {
 			this.start = start;
 			this.end = end;
 			this.name = name;
 		}
 	}
 
-	private List<ESP32ChipAddressRange> chipAddressRangesList;
+	private List<ESP32ChipMapping> chipMappingsList;
 
-	private List<ESP32ChipAddressRange> getBasicBounds(String Submodel) throws Exception {
+	private List<ESP32ChipMapping> getBasicBounds(String Submodel) throws Exception {
 		ResourceFile pyFile = Application.getModuleDataFile("esptool/targets/" + Submodel + ".py");
 		Scanner sc = new Scanner(pyFile.getInputStream(), "UTF-8");
 		// this is the submodel that the current submodel python class inherits from.
@@ -66,9 +66,9 @@ public class ESP32ChipMappings {
 			// saved earlier
 			return getBasicBounds(s.toLowerCase());
 		} else {
-			List<ESP32ChipAddressRange> basicBounds = new ArrayList<ESP32ChipAddressRange>();
-			basicBounds.add(new ESP32ChipAddressRange(IROM_MAP_START, IROM_MAP_END, "IROM"));
-			basicBounds.add(new ESP32ChipAddressRange(DROM_MAP_START, DROM_MAP_END, "DROM"));
+			List<ESP32ChipMapping> basicBounds = new ArrayList<ESP32ChipMapping>();
+			basicBounds.add(new ESP32ChipMapping(IROM_MAP_START, IROM_MAP_END, "IROM"));
+			basicBounds.add(new ESP32ChipMapping(DROM_MAP_START, DROM_MAP_END, "DROM"));
 			return basicBounds;
 		}
 	}
@@ -93,44 +93,44 @@ public class ESP32ChipMappings {
 			String name;
 			// Reorder the address ranges by storing them into a dictionary then reading them back out,
 			// in order to control which range has priority in the event of an overlap
-			HashMap<String, List<ESP32ChipAddressRange>> chipAddressRangesDict = new HashMap<>();
+			HashMap<String, List<ESP32ChipMapping>> chipMappingsDict = new HashMap<>();
 			while (m.find()) {
 				start = Integer.parseInt(m.group(1), 16);
 				end = Integer.parseInt(m.group(2), 16);
 				name = m.group(3);
-				if (!chipAddressRangesDict.containsKey(name)) {
-					chipAddressRangesDict.put(new ArrayList<ESP32ChipAddressRange>());
+				if (!chipMappingsDict.containsKey(name)) {
+					chipMappingsDict.put(name, new ArrayList<ESP32ChipMapping>());
 				}
-				chipAddressRangesDict.get(name).add(new ESP32ChipAddressRange(start, end, name));
+				chipMappingsDict.get(name).add(new ESP32ChipMapping(start, end, name));
 			}
-			chipAddressRangesList = new ArrayList<ESP32ChipAddressRange>();
+			chipMappingsList = new ArrayList<ESP32ChipMapping>();
 			// order is more permissions > less permissions ( execute > write > read), then more specific
 			// (e.g. "RTC_IRAM") > less specific (e.g. "IRAM")
 			String[] typePrecedence = {"RTC_IRAM", "DIRAM_IRAM", "RTC_DATA", "CACHE_PRO", "CACHE_APP",
 						   "IRAM", "IROM_MASK", "IROM", "RTC_DRAM", "DIRAM_DRAM","EXTRAM_DATA",
 						   "DRAM", "DROM_MASK", "DROM", "MEM_INTERNAL", "MEM_INTERNAL2"};
 			for (String name : typePrecedence) {
-				if (chipAddressRangesDict.containsKey(name)) {
-					for (ESP32ChipAddressRange addressRange : chipAddressRangesDict.get(name)) {
-						chipAddressRangesList.add(chipAddressRangesDict.get(name));
+				if (chipMappingsDict.containsKey(name)) {
+					for (ESP32ChipMapping mapping : chipMappingsDict.get(name)) {
+						chipMappingsList.add(chipMappingsDict.get(name));
 					}
 				}
 			}
 		}
 		// Add the default IROM and DROM bounds
-		for (ESP32ChipAddressRange addressRange : getBasicBounds(chipData.Submodel)) {
-			chipAddressRangesList.add(addressRange);
+		for (ESP32ChipMapping mapping : getBasicBounds(chipData.Submodel)) {
+			chipMappingsList.add(mapping);
 		}
 	}
 
 	public ESP32ChipMappings() { // fallback null initialization
-		chipAddressRangesList = new ArrayList<ESP32ChipAddressRange>();
+		chipMappingsList = new ArrayList<ESP32ChipMapping>();
 	}
 
 	public String getSegmentType(int address) {
-		for (ESP32ChipAddressRange addressRange : chipAddressRangesList) {
-			if (address >= addressRange.start && address <= addressRange.end) {
-				return addressRange.name;
+		for (ESP32ChipMapping mapping : chipMappingsList) {
+			if (address >= mapping.start && address <= mapping.end) {
+				return mapping.name;
 			}
 		}
 		return "IRAM"; // i.e. generic RWX
