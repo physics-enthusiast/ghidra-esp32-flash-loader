@@ -1,5 +1,6 @@
 package esp32_loader.hardware;
 
+import java.io.File;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
