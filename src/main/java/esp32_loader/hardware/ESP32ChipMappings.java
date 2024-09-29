@@ -24,7 +24,7 @@ public class ESP32ChipMappings {
 	private List<ESP32ChipMapping> chipMappingsList;
 
 	private List<ESP32ChipMapping> getBasicBounds(String Submodel) throws Exception {
-		ResourceFile pyFile = Application.getModuleDataFile("esptool/targets/" + Submodel + ".py");
+		ResourceFile pyFile = Application.getModuleDataFile("esptool/esptool/targets/" + Submodel + ".py");
 		Scanner sc = new Scanner(pyFile.getInputStream(), "UTF-8");
 		// this is the submodel that the current submodel python class inherits from.
 		// hold onto it for now, might need it later if matches cannot be found in the current file
