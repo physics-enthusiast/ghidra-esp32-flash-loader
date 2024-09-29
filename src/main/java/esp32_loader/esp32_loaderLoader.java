@@ -145,7 +145,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			}
 		}
 
-		var chip = imageToLoad.chip
+		var chip = imageToLoad.chip;
 		var chipData = chip.chipData;
 		if (chipData.isApproximation) {
 			log.appendMsg("Warning! Unknown chip ID in firmware image, guessing " + chipData.Submodel);
