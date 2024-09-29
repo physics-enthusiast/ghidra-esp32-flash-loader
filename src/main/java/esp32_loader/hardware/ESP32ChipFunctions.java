@@ -16,7 +16,7 @@ import ghidra.util.task.TaskMonitor;
 public class ESP32ChipFunctions {
 
 	public class ESP32ChipFunction {
-		public String name;StandAloneDataTypeManager
+		public String name;
 		public int address;
 		public FunctionDefinition definition;
 
@@ -67,7 +67,7 @@ public class ESP32ChipFunctions {
 		}
 		
 		FileDataTypeManager existingDTMgr = FileDataTypeManager.createFileArchive(f);
-		CParserUtils.parseHeaderFiles(new StandAloneDataTypeManager[0], filenames, includePaths, new String[0],
+		CParserUtils.parseHeaderFiles(new FileDataTypeManager[0], filenames, includePaths, new String[0],
 					      existingDTMgr, chipData.chipProcessor, "default", TaskMonitor.DUMMY);
 		structs = new ArrayList<Structure>();
 		Iterator<Structure> structIter = existingDTMgr.getAllStructures();
