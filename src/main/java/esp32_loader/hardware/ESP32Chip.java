@@ -28,7 +28,7 @@ public class ESP32Chip {
 	public ESP32ChipPeripherals chipPeripherals;
 	public ESP32ChipFunctions chipFunctions;
 
-	public static ChipData lookup(short chipID, MessageLog log) {
+	public static ChipData lookup(short chipID) {
 		try {
 			String chipModel;
 			String chipSubmodel;
@@ -54,6 +54,7 @@ public class ESP32Chip {
 					prevDiff = curDiff;
 				}
 				if (curDiff == 0) {
+					prevDiff = curDiff;
 					break;
 				}
 			}
@@ -70,7 +71,7 @@ public class ESP32Chip {
 	}
 
 	public ESP32Chip(short chipID, MessageLog log) {
-		chipData = this.lookup(chipID, log);
+		chipData = this.lookup(chipID);
 		try {
 			chipMappings = new ESP32ChipMappings(chipData);
 		} catch (Exception e) {
