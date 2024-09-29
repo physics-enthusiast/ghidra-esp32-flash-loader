@@ -9,14 +9,14 @@ import generic.jar.ResourceFile;
 import ghidra.framework.Application;
 import ghidra.app.util.cparser.C.CParserUtils;
 import ghidra.program.model.data.FunctionDefinition;
-import ghidra.program.model.data.StandAloneDataTypeManager;
+import ghidra.program.model.data.FileDataTypeManager;
 import ghidra.program.model.data.Structure;
 import ghidra.util.task.TaskMonitor;
 
 public class ESP32ChipFunctions {
 
 	public class ESP32ChipFunction {
-		public String name;
+		public String name;StandAloneDataTypeManager
 		public int address;
 		public FunctionDefinition definition;
 
@@ -55,7 +55,18 @@ public class ESP32ChipFunctions {
 		filenameList.toArray(filenames);
 		String[] includePaths = new String[includePathList.size()];
 		includePathList.toArray(includePaths);
-		StandAloneDataTypeManager existingDTMgr = new StandAloneDataTypeManager(chipData.chipSubmodel.toUpperCase());
+		File f = new File(Application.getUserTempDirectory(), "esp32_tmp.gdt");
+		String path = f.getAbsolutePath();
+		if (f.exists()) {
+			f.delete();
+		}
+		String lockFile = path + ".ulock";
+		File lf = new File(lockFile);
+		if (lf.exists()) {
+			lf.delete();
+		}
+		
+		FileDataTypeManager existingDTMgr = FileDataTypeManager.createFileArchive(f);
 		CParserUtils.parseHeaderFiles(new StandAloneDataTypeManager[0], filenames, includePaths, new String[0],
 					      existingDTMgr, chipData.chipProcessor, "default", TaskMonitor.DUMMY);
 		structs = new ArrayList<Structure>();
