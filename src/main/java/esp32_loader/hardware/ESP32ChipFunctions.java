@@ -37,7 +37,7 @@ public class ESP32ChipFunctions {
 	public int minAddr = null;
 	public int maxAddr = null;
 
-	public ESP32ChipFunctions(ChipData chipData) throws Exception {
+	public ESP32ChipFunctions(ESP32Chip.ChipData chipData) throws Exception {
 		String romDir = "esp-idf/components/esp_rom";
 		String romSubmodelDir = romRootDir + "/" + chipData.Submodel;
 		String romSubmodelIncludeDir = romSubmodelDir + "/include/esp32c3/rom";
