@@ -25,7 +25,7 @@ public class ESP32Partition {
 		Data = reader.readByteArray(Offset, Length);
 	}
 
-	public ESP32AppImage ParseAppImage() throws Exception {
+	public ESP32App ParseAppImage() throws Exception {
 		// TODO Auto-generated method stub
 
 		if (Byte.toUnsignedInt(Data[0]) != 0xE9) {
@@ -35,7 +35,7 @@ public class ESP32Partition {
 
 		ByteArrayProvider dataProv = new ByteArrayProvider(Data);
 
-		return new ESP32AppImage(new BinaryReader(dataProv, true));
+		return new ESP32App(new BinaryReader(dataProv, true));
 	}
 
 }
