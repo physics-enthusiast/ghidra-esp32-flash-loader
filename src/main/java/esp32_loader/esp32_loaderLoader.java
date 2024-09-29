@@ -150,7 +150,10 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		if (chipData.isApproximation) {
 			log.appendMsg("Warning! Unknown chip ID in firmware image, guessing " + chipData.Submodel);
 		}
-
+		var dtm = program.getDataTypeManager();
+		var space = program.getAddressFactory().getDefaultAddressSpace();
+		var listing = program.getListing();
+		var symtbl = program.getSymbolTable();
 		try {
 			AddressSetPropertyMap codeProp = program.getAddressSetPropertyMap("CodeMap");
 			if (codeProp == null) {
@@ -176,7 +179,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				}
 			}
 			/* set the entry point */
-			program.getSymbolTable().addExternalEntryPoint(api.toAddr(imageToLoad.EntryAddress));
+			symtbl.addExternalEntryPoint(api.toAddr(imageToLoad.EntryAddress));
 		} catch (Exception e) {
 			log.appendException(e);
 		}
@@ -185,13 +188,10 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			for (var peripheral : chip.chipPeripherals.chipPeripheralsList) {
 				registerPeripheralBlock(program, api, peripheral.baseAddr, peripheral.baseAddr + peripheral.size - 1,
 							peripheral.peripheralName);
-				var dtm = program.getDataTypeManager();
-				var space = program.getAddressFactory().getDefaultAddressSpace();
-				var listing = program.getListing();
-				var symtbl = program.getSymbolTable();
+				
 				var namespace = symtbl.getNamespace("Peripherals", null);
 				if (namespace == null) {
-					namespace = program.getSymbolTable().createNameSpace(null, "Peripherals", SourceType.ANALYSIS);
+					namespace = symtbl.createNameSpace(null, "Peripherals", SourceType.ANALYSIS);
 				}
 
 				var addr = space.getAddress(peripheral.baseAddr);
@@ -203,13 +203,37 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			log.appendException(e);
 		}
 		try {
-			/* Label BootROM Addresses */
-			processLD(program, api, imageToLoad.chipID, log);
+			if (chip.chipFunctions.minAddr != null) {
+				var start = api.toAddr(chip.chipFunctions.minAddr);
+				var end = api.toAddr(chip.chipFunctions.maxAddr);
+				reserveAddressSpace(program, start, end.subtract(start), "ROM", log);
+				for (var struct : chip.chipFunctions.structs) {
+					dtm.addDataType(struct, DataTypeConflictHandler.REPLACE_HANDLER);
+				}
+				for (var function : chip.chipFunctions.chipFunctionsList) {
+					try {
+						var name = function.name;
+						var address = api.toAddr(function.address);
+						dtm.addDataType(function.definition, DataTypeConflictHandler.REPLACE_HANDLER);
+						var existingFunction = api.getFunctionAt(address);
+						if (existingFunction != null) {
+							var oldName = existingFunction.getName();
+							existingFunction.setName(name, SourceType.DEFAULT);
+							log.appendMsg(String.format("Renamed function %s to %s at address %s",
+										    oldName, name, address));
+						} else {
+							api.createFunction(function.address, function.name);
+						}
+					} catch (Exception ex) {
+						log.appendException(ex);
+						log.appendMsg("Caused by function: " + function.name);
+						continue;
+					}
+				}
+			}
 		} catch (Exception ex) {
 			log.appendException(e);
 		}
-
-
 
 		// TODO: Load the bytes from 'provider' into the 'program'.
 
@@ -260,94 +284,6 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				false);
 		block.setRead(true);
 		block.setWrite(true);
-	}
-	
-	private class TempFunction {
-		public Address address;
-		public String name;
-	
-		public TempFunction(Address a, String n) {
-			address = a;
-			name = n;
-		}
-	}
-
-	private void processLD(Program program, FlatProgramAPI api, short chipID, MessageLog log) throws Exception {
-		var ldFilePath = "esp-idf/components/esp_rom/";
-		ResourceFile ldFileDir;
-		ResourceFile[] ldFileList;
-		switch(chipID) {
-			case 0: // ESP32
-				ldFileDir = Application.getModuleDataSubDirectory(ldFilePath + "esp32/ld");
-				break;
-			case 2: // ESP32-S2
-				ldFileDir = Application.getModuleDataSubDirectory(ldFilePath + "esp32s2/ld");
-				break;
-			case 9: // ESP32-S3
-				ldFileDir = Application.getModuleDataSubDirectory(ldFilePath + "esp32s3/ld");
-				break;
-			case 12: // ESP32-C2
-				ldFileDir = Application.getModuleDataSubDirectory(ldFilePath + "esp32c2/ld");
-				break;
-			case 5: // ESP32-C3
-				ldFileDir = Application.getModuleDataSubDirectory(ldFilePath + "esp32c3/ld");
-				break;
-			case 13: // ESP32-C6
-				ldFileDir = Application.getModuleDataSubDirectory(ldFilePath + "esp32c6/ld");
-				break;
-			case 20: // ESP32-C61
-				ldFileDir = Application.getModuleDataSubDirectory(ldFilePath + "esp32c61/ld");
-				break;
-			case 16: // ESP32-H2
-				ldFileDir = Application.getModuleDataSubDirectory(ldFilePath + "esp32h2/ld");
-				break;
-			default:
-				throw new UnknownModelException("Unknown ESP32 Chip ID : " + chipID );
-		}
-		ldFileList = ldFileDir.listFiles();
-		AddressFactory addressFactory = program.getAddressFactory();
-		AddressSet addrSet = new AddressSet();
-		List<TempFunction> functions = new ArrayList<TempFunction>();
-		for (ResourceFile ldFile : ldFileList) {
-			Scanner sc = new Scanner(ldFile.getInputStream(), "UTF-8");
-			// Match the 2 kinds of .ld patterns:
-			// 1. <symbol name> = <address>;
-			// 2. PROVIDE ( <symbol name> = <address> );
-			// in such a way that the "PROVIDE"s, brackets, equal signs, and semicolons are removed
-			Pattern p = Pattern.compile("(?:PROVIDE \\( |)(.*)=(.*?)(?:\\)|);");
-			while (sc.findWithinHorizon(p, 0) != null) {
-				MatchResult m = sc.match();
-				try {
-					var name = m.group(1).trim();
-					var address = addressFactory.getAddress(m.group(2).trim());
-					var function = api.getFunctionAt(address);
-					if (function != null) {
-						var oldName = function.getName();
-						function.setName(name, SourceType.DEFAULT);
-						log.appendMsg(String.format("Renamed function %s to %s at address %s",
-									    oldName, name, address));
-					} else {
-						// this might be at an address without a memory block yet,
-						// so store the address and name for after we make one
-						functions.add(new TempFunction(address, name));
-					}
-					addrSet.add(address);
-				} catch (Exception ex) {
-					log.appendException(ex);
-					log.appendMsg(String.format("Caused by match:", m.group(0)));
-					continue;
-				} 
-			}
-		}
-		var start = addrSet.getMinAddress();
-		var end = addrSet.getMaxAddress();
-		var blocks = reserveAddressSpace(program, start, end.subtract(start), "ROM", log);
-		// initializeMemoryBlocks(program, blocks, (byte) 0x0,
-		//		       true, false, true, log);
-		for (TempFunction function : functions) {
-			api.createFunction(function.address, function.name);
-		}
-
 	}
 
 	@Override
