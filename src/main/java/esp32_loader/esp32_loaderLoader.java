@@ -107,7 +107,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 					/* App image magic is first byte */
 					try {
 						parsedAppImage = new ESP32App(reader);
-						String arch = parsedAppImage.chipData.chipProcessor;
+						String arch = parsedAppImage.chip.chipData.chipProcessor;
 						loadSpecs.add(new LoadSpec(this, 0, new LanguageCompilerSpecPair(
 								new LanguageID(arch), new CompilerSpecID("default")), true));
 					} catch (Exception ex) {
@@ -139,14 +139,14 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				imageToLoad = part.ParseAppImage();
 			} catch (Exception ex) {
 				log.appendException(ex);
-				imageToLoad = ESP32App();
+				imageToLoad = new ESP32App();
 			}
 		}
 
 		var chip = imageToLoad.chip;
 		var chipData = chip.chipData;
 		if (chipData.isApproximation) {
-			log.appendMsg("Warning! Unknown chip ID in firmware image, guessing " + chipData.Submodel);
+			log.appendMsg("Warning! Unknown chip ID in firmware image, guessing " + chipData.chipSubmodel);
 		}
 		var dtm = program.getDataTypeManager();
 		var space = program.getAddressFactory().getDefaultAddressSpace();
