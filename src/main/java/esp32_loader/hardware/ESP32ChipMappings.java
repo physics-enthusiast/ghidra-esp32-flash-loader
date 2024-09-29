@@ -35,7 +35,7 @@ public class ESP32ChipMappings {
 		int DROM_MAP_START;
 		int DROM_MAP_END;
 		Boolean[] matched = {false, false, false, false};
-		while (sc.findWithinHorizon(p,0)) {
+		while (sc.findWithinHorizon(p,0) != null) {
 			var m = sc.match();
 			switch (m.group(1)) {
 				case "IROM_MAP_START":
@@ -69,7 +69,7 @@ public class ESP32ChipMappings {
 	}
 
 	public ESP32ChipMappings(ESP32Chip.ChipData chipData) throws Exception {
-		ResourceFile pyFile = Application.getModuleDataFile("esptool/targets/" + chipData.Submodel + ".py");
+		ResourceFile pyFile = Application.getModuleDataFile("esptool/targets/" + chipData.chipSubmodel + ".py");
 		Scanner sc = new Scanner(pyFile.getInputStream(), "UTF-8");
 		
 		// The MEMORY_MAP is defined in python code as an array of
@@ -80,7 +80,7 @@ public class ESP32ChipMappings {
 		// s being null is possible, since MEMORY_MAP is not always defined. In particular, as of the
 		// time of writing, esp32h2.py does not define it, and appears to rely on just the IROM and
 		// DROM bounds to determine memory address permissions (see the usage and code of getBasicBounds())
-		if (s) {
+		if (s != null) {
 			Pattern p = Pattern.compile("\\[.*?0x(.*?),.*?0x(.*?),.*?\"(.*?)\"\\]");
 			Matcher m = p.matcher(s);
 			int start;
@@ -104,16 +104,16 @@ public class ESP32ChipMappings {
 			String[] typePrecedence = {"RTC_IRAM", "DIRAM_IRAM", "RTC_DATA", "CACHE_PRO", "CACHE_APP",
 						   "IRAM", "IROM_MASK", "IROM", "RTC_DRAM", "DIRAM_DRAM","EXTRAM_DATA",
 						   "DRAM", "DROM_MASK", "DROM", "MEM_INTERNAL", "MEM_INTERNAL2"};
-			for (String name : typePrecedence) {
-				if (chipMappingsDict.containsKey(name)) {
-					for (ESP32ChipMapping mapping : chipMappingsDict.get(name)) {
-						chipMappingsList.add(chipMappingsDict.get(name));
+			for (String type : typePrecedence) {
+				if (chipMappingsDict.containsKey(type)) {
+					for (ESP32ChipMapping mapping : chipMappingsDict.get(type)) {
+						chipMappingsList.add(mapping);
 					}
 				}
 			}
 		}
 		// Add the default IROM and DROM bounds
-		for (ESP32ChipMapping mapping : getBasicBounds(chipData.Submodel)) {
+		for (ESP32ChipMapping mapping : getBasicBounds(chipData.chipSubmodel)) {
 			chipMappingsList.add(mapping);
 		}
 	}
