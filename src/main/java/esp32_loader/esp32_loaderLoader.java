@@ -201,7 +201,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			log.appendException(e);
 		}
 		try {
-			if (chip.chipFunctions.minAddr != null) {
+			if (chip.chipFunctions.hasFunctions) {
 				var start = api.toAddr(chip.chipFunctions.minAddr);
 				var end = api.toAddr(chip.chipFunctions.maxAddr);
 				reserveAddressSpace(program, start, end.subtract(start), "ROM", log);
