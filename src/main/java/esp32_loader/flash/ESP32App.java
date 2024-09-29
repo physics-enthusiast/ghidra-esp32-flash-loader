@@ -29,7 +29,7 @@ public class ESP32App {
 			this.Length = Length;
 			this.Data = Data;
 			this.Name = Name;
-			switch (name) {
+			switch (Name) {
 				// RWX
 				case "RTC_IRAM":
 				case "DIRAM_IRAM":
