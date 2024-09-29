@@ -227,9 +227,9 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 						log.appendMsg("Caused by function: " + function.name);
 						continue;
 					}
-				} else {
-					log.appendMsg("Warning! No functions found!");
 				}
+			} else {
+				log.appendMsg("Warning! No functions found!");
 			}
 		} catch (Exception ex) {
 			log.appendException(ex);
