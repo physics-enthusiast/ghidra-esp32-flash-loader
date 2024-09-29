@@ -52,9 +52,6 @@ public class ESP32ChipFunctions {
 			includePathList.add(includeDir.getAbsolutePath());
 		}
 		String[] filenames = new String[filenameList.size()];
-		if (filenameList.size == 0 {
-			throw new Exception("No header files found!");
-		}
 		filenameList.toArray(filenames);
 		String[] includePaths = new String[includePathList.size()];
 		includePathList.toArray(includePaths);
