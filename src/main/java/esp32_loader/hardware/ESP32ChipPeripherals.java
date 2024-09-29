@@ -50,7 +50,7 @@ public class ESP32ChipPeripherals {
 	}
 
 	public ESP32ChipPeripherals(ESP32Chip.ChipData chipData) throws Exception {
-		ResourceFile svdFile = Application.getModuleDataFile("svd/svd/" + chipData.Model + ".svd");
+		ResourceFile svdFile = Application.getModuleDataFile("svd/svd/" + chipData.chipModel + ".svd");
 
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = factory.newDocumentBuilder();
