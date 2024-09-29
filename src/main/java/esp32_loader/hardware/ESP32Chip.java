@@ -3,6 +3,7 @@ package esp32_loader.hardware;
 import java.util.*;
 
 import generic.jar.ResourceFile;
+import ghidra.app.util.importer.MessageLog;
 import ghidra.framework.Application;
 import org.w3c.dom.*;
 import javax.xml.parsers.*;
