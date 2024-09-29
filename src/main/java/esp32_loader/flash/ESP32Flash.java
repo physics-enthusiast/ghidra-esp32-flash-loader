@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import ghidra.app.util.bin.BinaryReader;
 
 public class ESP32Flash {
-	// public ESP32AppImage SecondaryBootloader;
+	public ESP32App SecondaryBootloader;
 	public ArrayList<ESP32Partition> Partitions = new ArrayList<ESP32Partition>();
 	public short chipID;
 
