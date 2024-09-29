@@ -47,7 +47,6 @@ import ghidra.program.model.address.AddressOverflowException;
 import ghidra.program.model.address.AddressRange;
 import ghidra.program.model.address.AddressSet;
 import ghidra.program.model.data.DataTypeConflictHandler;
-import ghidra.program.model.data.StandAloneDataTypeManager;
 import ghidra.program.model.data.StructureDataType;
 import ghidra.program.model.data.UnsignedLongDataType;
 import ghidra.program.model.lang.CompilerSpecID;
@@ -147,10 +146,6 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		var chip = imageToLoad.chip;
 		log.copyFrom(chip.log);
 		var chipData = chip.chipData;
-		
-		StandAloneDataTypeManager existingDTMgr = new StandAloneDataTypeManager(chipData.chipSubmodel.toUpperCase());
-		log.appendMsg(existingDTMgr.getName());
-		log.appendMsg(Application.getUserTempDirectory().getAbsolutePath());
 		
 		if (chipData.isApproximation) {
 			log.appendMsg("Warning! Unknown chip ID in firmware image, guessing " + chipData.chipSubmodel);
