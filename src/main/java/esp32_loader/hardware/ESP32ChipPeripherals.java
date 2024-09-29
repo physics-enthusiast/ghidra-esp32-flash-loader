@@ -6,6 +6,8 @@ import generic.jar.ResourceFile;
 import ghidra.framework.Application;
 import ghidra.program.model.data.StructureDataType;
 import ghidra.program.model.data.UnsignedLongDataType;
+import org.w3c.dom.*;
+import javax.xml.parsers.*;
 
 public class ESP32ChipPeripherals {
 
