@@ -9,7 +9,7 @@ import javax.xml.parsers.*;
 
 public class ESP32Chip {
 
-	static class ChipData {
+	public static class ChipData {
 		public String chipModel;
 		public String chipSubmodel;
 		public String chipProcessor;
@@ -28,7 +28,7 @@ public class ESP32Chip {
 	public ESP32ChipPeripherals chipPeripherals;
 	public ESP32ChipFunctions chipFunctions;
 
-	static ChipData lookup(short chipID) {
+	public static ChipData lookup(short chipID) {
 		try {
 			String chipModel;
 			String chipSubmodel;
