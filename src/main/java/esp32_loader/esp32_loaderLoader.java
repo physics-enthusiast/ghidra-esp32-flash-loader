@@ -122,6 +122,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 	@Override
 	protected void load(ByteProvider provider, LoadSpec loadSpec, List<Option> options, Program program,
 			TaskMonitor monitor, MessageLog log) throws CancelledException, IOException {
+		log.appendMsg(Application.getUserTempDirectory());
 
 		FlatProgramAPI api = new FlatProgramAPI(program);
 		ESP32App imageToLoad = null;
