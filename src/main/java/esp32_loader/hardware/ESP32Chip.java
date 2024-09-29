@@ -63,7 +63,7 @@ public class ESP32Chip {
 			chipModel = chipInfo.getElementsByTagName("model").item(0).getTextContent();
 			chipSubmodel = chipInfo.getElementsByTagName("submodel").item(0).getTextContent();
 			chipProcessor = chipInfo.getElementsByTagName("processor").item(0).getTextContent();
-			boolean isApproximation = (prevDiff == 0);
+			boolean isApproximation = (prevDiff != 0);
 			return new ChipData(chipModel, chipSubmodel, chipProcessor, isApproximation);
 		} catch (Exception e) {
 			log.appendException(e);
