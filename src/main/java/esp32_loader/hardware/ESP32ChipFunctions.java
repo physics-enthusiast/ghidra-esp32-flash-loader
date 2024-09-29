@@ -65,7 +65,7 @@ public class ESP32ChipFunctions {
 			structs.add(struct);
 		}
 		HashMap<String, FunctionDefinition> chipFunctionsDict = new HashMap<>();
-		Iterator<Structure> funcIter = existingDTMgr.getAllFunctionDefinitions();
+		Iterator<FunctionDefinition> funcIter = existingDTMgr.getAllFunctionDefinitions();
 		while (funcIter.hasNext()) {
 			FunctionDefinition functionDefinition = funcIter.next();
 			chipFunctionsDict.put(functionDefinition.getName(), functionDefinition);
