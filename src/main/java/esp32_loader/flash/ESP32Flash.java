@@ -17,7 +17,7 @@ public class ESP32Flash {
 		byte[] skipped = reader.readNextByteArray(0x1000);
 		var idx1 = reader.getPointerIndex();
 		byte[] bootLoader = reader.readNextByteArray(0x7000);
-		chipID = ByteBuffer.wrap(bootLoader, 12, 2).short;
+		chipID = ByteBuffer.wrap(bootLoader, 12, 2).getShort();
 
 		var idx2 = reader.getPointerIndex();
 		/* should be at the partition table now */
