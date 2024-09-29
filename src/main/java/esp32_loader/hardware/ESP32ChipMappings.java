@@ -30,10 +30,10 @@ public class ESP32ChipMappings {
 		// hold onto it for now, might need it later if matches cannot be found in the current file
 		String s = sc.findWithinHorizon("class " + Submodel.toUpperCase() + "ROM\\((.*?)ROM\\):", 0);
 		Pattern p = Pattern.compile("(IROM_MAP_START|IROM_MAP_END|DROM_MAP_START|DROM_MAP_END).*?=.*?0x(.*)");
-		int IROM_MAP_START;
-		int IROM_MAP_END;
-		int DROM_MAP_START;
-		int DROM_MAP_END;
+		int IROM_MAP_START = 0;
+		int IROM_MAP_END = 0;
+		int DROM_MAP_START = 0;
+		int DROM_MAP_END = 0;
 		Boolean[] matched = {false, false, false, false};
 		while (sc.findWithinHorizon(p,0) != null) {
 			var m = sc.match();
