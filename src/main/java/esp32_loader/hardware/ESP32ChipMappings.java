@@ -69,7 +69,7 @@ public class ESP32ChipMappings {
 	}
 
 	public ESP32ChipMappings(ESP32Chip.ChipData chipData) throws Exception {
-		ResourceFile pyFile = Application.getModuleDataFile("esptool/targets/" + chipData.chipSubmodel + ".py");
+		ResourceFile pyFile = Application.getModuleDataFile("esptool/esptool/targets/" + chipData.chipSubmodel + ".py");
 		Scanner sc = new Scanner(pyFile.getInputStream(), "UTF-8");
 		
 		// The MEMORY_MAP is defined in python code as an array of
