@@ -33,6 +33,8 @@ public class ESP32ChipFunctions {
 
 	public List<ESP32ChipFunction> chipFunctionsList;
 	public List<Structure> structs;
+	public int minAddr = null;
+	public int maxAddr = null;
 
 	public ESP32ChipFunctions(ChipData chipData) throws Exception {
 		String romDir = "esp-idf/components/esp_rom";
@@ -85,7 +87,16 @@ public class ESP32ChipFunctions {
 				var m = sc.match();
 				String name = m.group(1).trim();
 				int address = Integer.parseInt(m.group(2).trim(), 16);
-				chipFunctionsList.add(new ESP32ChipFunction(name, address, chipFunctionsDict.get(name)));
+				if (address != null) {
+					chipFunctionsList.add(new ESP32ChipFunction(name, address, chipFunctionsDict.get(name)));
+					if (minAddr != null) {
+						minAddr = Math.min(minAddr, address);
+						maxAddr = Math.max(maxAddr, address);
+					} else {
+						minAddr = address;
+						maxAddr = address;
+					}
+				}
 			}
 		}
 	}
