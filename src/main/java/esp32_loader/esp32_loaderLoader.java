@@ -178,8 +178,8 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			}
 			/* set the entry point */
 			symtbl.addExternalEntryPoint(api.toAddr(imageToLoad.EntryAddress));
-		} catch (Exception e) {
-			log.appendException(e);
+		} catch (Exception ex) {
+			log.appendException(ex);
 		}
 
 		try {
@@ -198,7 +198,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				symtbl.createLabel(addr, peripheral.peripheralName, namespace, SourceType.USER_DEFINED);
 			}
 		} catch (Exception ex) {
-			log.appendException(e);
+			log.appendException(ex);
 		}
 		try {
 			if (chip.chipFunctions.hasFunctions) {
@@ -230,7 +230,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				}
 			}
 		} catch (Exception ex) {
-			log.appendException(e);
+			log.appendException(ex);
 		}
 
 		// TODO: Load the bytes from 'provider' into the 'program'.
