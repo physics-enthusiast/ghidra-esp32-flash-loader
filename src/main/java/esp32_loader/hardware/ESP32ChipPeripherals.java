@@ -11,7 +11,7 @@ public class ESP32ChipPeripherals {
 
 	public class ESP32ChipPeripheral {
 		public int baseAddr;
-		public String peripheralName
+		public String peripheralName;
 		public StructureDataType struct;
 		public int size;
 
