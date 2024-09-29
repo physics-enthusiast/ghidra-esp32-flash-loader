@@ -69,7 +69,6 @@ public class ESP32ChipFunctions {
 		while (funcIter.hasNext()) {
 			FunctionDefinition functionDefinition = funcIter.next();
 			chipFunctionsDict.put(functionDefinition.getName(), functionDefinition);
-		    structs.add();
 		}
 		ResourceFile ldFileDir = Application.getModuleDataSubDirectory(romSubmodelDir + "/ld");
 		ResourceFile[] ldFileList = ldFileDir.listFiles();
