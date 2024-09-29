@@ -7,7 +7,7 @@ import ghidra.framework.Application;
 
 public class ESP32Chip {
 
-	public class ChipData {
+	static class ChipData {
 		public String chipModel;
 		public String chipSubmodel;
 		public String chipProcessor;
