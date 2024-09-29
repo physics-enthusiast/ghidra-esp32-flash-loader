@@ -25,6 +25,7 @@ public class ESP32Chip {
 	public ChipData chipData;
 	public ESP32ChipMappings chipMappings;
 	public ESP32ChipPeripherals chipPeripherals;
+	public ESP32ChipFunctions chipFunctions;
 
 	static ChipData lookup(short chipID) {
 		try {
@@ -82,6 +83,13 @@ public class ESP32Chip {
 			String exceptionTxt = e.toString();
 			System.out.println(exceptionTxt);
 			chipPeripherals = new ESP32ChipPeripherals();
+		}
+		try {
+			chipFunctions = new ESP32ChipFunctions(chipData);
+		} catch (Exception e) {
+			String exceptionTxt = e.toString();
+			System.out.println(exceptionTxt);
+			chipFunctions = new ESP32ChipFunctions();
 		}
 	}
 
