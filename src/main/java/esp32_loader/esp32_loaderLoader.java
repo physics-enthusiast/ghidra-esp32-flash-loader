@@ -47,6 +47,7 @@ import ghidra.program.model.address.AddressOverflowException;
 import ghidra.program.model.address.AddressRange;
 import ghidra.program.model.address.AddressSet;
 import ghidra.program.model.data.DataTypeConflictHandler;
+import ghidra.program.model.data.StandAloneDataTypeManager;
 import ghidra.program.model.data.StructureDataType;
 import ghidra.program.model.data.UnsignedLongDataType;
 import ghidra.program.model.lang.CompilerSpecID;
