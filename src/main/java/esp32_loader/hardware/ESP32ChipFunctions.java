@@ -11,8 +11,6 @@ import ghidra.app.util.cparser.C.CParserUtils;
 import ghidra.program.model.data.FunctionDefinition;
 import ghidra.program.model.data.StandAloneDataTypeManager;
 import ghidra.program.model.data.Structure;
-import ghidra.program.model.lang.CompilerSpecID;
-import ghidra.program.model.lang.LanguageID;
 import ghidra.util.task.TaskMonitor;
 
 public class ESP32ChipFunctions {
@@ -36,7 +34,7 @@ public class ESP32ChipFunctions {
 
 	public ESP32ChipFunctions(ESP32Chip.ChipData chipData) throws Exception {
 		String romDir = "esp-idf/components/esp_rom";
-		String romSubmodelDir = romRootDir + "/" + chipData.Submodel;
+		String romSubmodelDir = romDir + "/" + chipData.chipSubmodel;
 		String romSubmodelIncludeDir = romSubmodelDir + "/include/esp32c3/rom";
 		ResourceFile[] includeDirs = {Application.getModuleDataSubDirectory(romDir + "/include"),
 					      Application.getModuleDataSubDirectory(romSubmodelDir + "/include"),
@@ -46,7 +44,7 @@ public class ESP32ChipFunctions {
 		for (ResourceFile includeDir : includeDirs) {
 			for (ResourceFile headerFile : includeDir.listFiles()) {
 				String name = headerFile.getName();
-				if ( name.substring(Math.max(str.length() - 2, 0)) == ".h" && !filenameList.contains(name)) {
+				if ( name.substring(Math.max(name.length() - 2, 0)) == ".h" && !filenameList.contains(name)) {
 					filenameList.add(name);
 				}
 			}
@@ -56,20 +54,22 @@ public class ESP32ChipFunctions {
 		filenameList.toArray(filenames);
 		String[] includePaths = new String[includePathList.size()];
 		includePathList.toArray(includePaths);
-		StandAloneDataTypeManager existingDTMgr = new StandAloneDataTypeManager(chipData.Submodel.toUpperCase());
-		LanguageID languageId = new LanguageID(chipData.chipProcessor);
-		CompilerSpecID compileSpecId = new CompilerSpecID("default");
+		StandAloneDataTypeManager existingDTMgr = new StandAloneDataTypeManager(chipData.chipSubmodel.toUpperCase());
 		CParserUtils.parseHeaderFiles(new StandAloneDataTypeManager[0], filenames, includePaths, new String[0],
-					      existingDTMgr, languageId, compileSpecId, TaskMonitor.DUMMY);
+					      existingDTMgr, chipData.chipProcessor, "default", TaskMonitor.DUMMY);
 		structs = new ArrayList<Structure>();
-		for (Structure struct : existingDTMgr.getAllStructures()) {
+		Iterator<Structure> structIter = existingDTMgr.getAllStructures();
+		while (structIter.hasNext()) {
+			Structure struct = structIter.next();
 			structs.add(struct);
 		}
 		HashMap<String, FunctionDefinition> chipFunctionsDict = new HashMap<>();
-		for (FunctionDefinition functionDefinition : existingDTMgr.getAllFunctionDefinitions()) {
+		Iterator<Structure> funcIter = existingDTMgr.getAllFunctionDefinitions();
+		while (funcIter.hasNext()) {
+			FunctionDefinition functionDefinition = funcIter.next();
 			chipFunctionsDict.put(functionDefinition.getName(), functionDefinition);
+		    structs.add();
 		}
-		
 		ResourceFile ldFileDir = Application.getModuleDataSubDirectory(romSubmodelDir + "/ld");
 		ResourceFile[] ldFileList = ldFileDir.listFiles();
 
