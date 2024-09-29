@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 
 import generic.jar.ResourceFile;
 import ghidra.framework.Application;
+import org.w3c.dom.*;
+import javax.xml.parsers.*;
 
 public class ESP32ChipMappings {
 
