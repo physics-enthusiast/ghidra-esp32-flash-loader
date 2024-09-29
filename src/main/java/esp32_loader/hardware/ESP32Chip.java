@@ -66,7 +66,8 @@ public class ESP32Chip {
 			boolean isApproximation = (prevDiff == 0);
 			return new ChipData(chipModel, chipSubmodel, chipProcessor, isApproximation);
 		} catch (Exception e) {
-			log.appendException(e);
+			String exceptionTxt = e.toString();
+			System.out.println(exceptionTxt);
 			return new ChipData("esp32", "esp32", "Xtensa:LE:32:default", true);
 		}
 	}
