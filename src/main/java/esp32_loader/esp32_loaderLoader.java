@@ -146,6 +146,11 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		var chip = imageToLoad.chip;
 		log.copyFrom(chip.log);
 		var chipData = chip.chipData;
+		
+		StandAloneDataTypeManager existingDTMgr = new StandAloneDataTypeManager(chipData.chipSubmodel.toUpperCase());
+		log.appendMsg(existingDTMgr.getName());
+		log.appendMsg(Application.getUserTempDirectory().getAbsolutePath());
+		
 		if (chipData.isApproximation) {
 			log.appendMsg("Warning! Unknown chip ID in firmware image, guessing " + chipData.chipSubmodel);
 		}
