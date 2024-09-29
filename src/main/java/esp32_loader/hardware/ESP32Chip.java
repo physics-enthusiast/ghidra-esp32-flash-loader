@@ -30,7 +30,7 @@ public class ESP32Chip {
 	public ESP32ChipPeripherals chipPeripherals;
 	public ESP32ChipFunctions chipFunctions;
 
-	public static ChipData lookup(short chipID) {
+	public static ChipData lookup(short chipID, MessageLog log) {
 		try {
 			String chipModel;
 			String chipSubmodel;
@@ -66,14 +66,17 @@ public class ESP32Chip {
 			boolean isApproximation = (prevDiff == 0);
 			return new ChipData(chipModel, chipSubmodel, chipProcessor, isApproximation);
 		} catch (Exception e) {
-			String exceptionTxt = e.toString();
-			System.out.println(exceptionTxt);
+			log.appendException(e);
 			return new ChipData("esp32", "esp32", "Xtensa:LE:32:default", true);
 		}
 	}
 
+	public static ChipData lookup(short chipID) {
+		return lookup(chipID, new MessageLog());
+	}
+
 	public ESP32Chip(short chipID) {
-		chipData = this.lookup(chipID);
+		chipData = this.lookup(chipID, log);
 		try {
 			chipMappings = new ESP32ChipMappings(chipData);
 		} catch (Exception e) {
