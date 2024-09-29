@@ -36,7 +36,7 @@ public class ESP32ChipFunctions {
 	public ESP32ChipFunctions(ESP32Chip.ChipData chipData) throws Exception {
 		String romDir = "esp-idf/components/esp_rom";
 		String romSubmodelDir = romDir + "/" + chipData.chipSubmodel;
-		String romSubmodelIncludeDir = romSubmodelDir + "/include/esp32c3/rom";
+		String romSubmodelIncludeDir = romSubmodelDir + "/include/" + chipData.chipSubmodel + "/rom";
 		ResourceFile[] includeDirs = {Application.getModuleDataSubDirectory(romDir + "/include"),
 					      Application.getModuleDataSubDirectory(romSubmodelDir + "/include"),
 					      Application.getModuleDataSubDirectory(romSubmodelIncludeDir)};
