@@ -29,8 +29,9 @@ public class ESP32ChipFunctions {
 
 	public List<ESP32ChipFunction> chipFunctionsList;
 	public List<Structure> structs;
-	public int minAddr = null;
-	public int maxAddr = null;
+	public int minAddr;
+	public int maxAddr;
+	public boolean hasFunctions = false;
 
 	public ESP32ChipFunctions(ESP32Chip.ChipData chipData) throws Exception {
 		String romDir = "esp-idf/components/esp_rom";
@@ -84,16 +85,18 @@ public class ESP32ChipFunctions {
 			while (sc.findWithinHorizon(p, 0) != null) {
 				var m = sc.match();
 				String name = m.group(1).trim();
-				int address = Integer.parseInt(m.group(2).trim(), 16);
-				if (address != null) {
+				try {
+					int address = Integer.parseInt(m.group(2).trim(), 16);
 					chipFunctionsList.add(new ESP32ChipFunction(name, address, chipFunctionsDict.get(name)));
-					if (minAddr != null) {
+					if (hasFunctions) {
 						minAddr = Math.min(minAddr, address);
 						maxAddr = Math.max(maxAddr, address);
 					} else {
 						minAddr = address;
 						maxAddr = address;
+						hasFunctions = true;
 					}
+				} catch(NumberFormatException e) {
 				}
 			}
 		}
