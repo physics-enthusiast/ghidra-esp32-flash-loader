@@ -1,6 +1,5 @@
 package esp32_loader.hardware;
 
-import java.lang.Math
 import java.util.*;
 
 import generic.jar.ResourceFile;
@@ -14,7 +13,7 @@ public class ESP32Chip {
 		public String chipProcessor;
 		public boolean isApproximation;
 
-		public ChipData(String chipModel, String chipSubmodel, String chipProcessor, boolean isApproximation;) {
+		public ChipData(String chipModel, String chipSubmodel, String chipProcessor, boolean isApproximation) {
 			this.chipModel = chipModel;
 			this.chipSubmodel = chipSubmodel;
 			this.chipProcessor = chipProcessor;
@@ -47,7 +46,7 @@ public class ESP32Chip {
 			for (var x = 0; x < chipList.getLength(); x++) {
 				Node chipNode = chipList.item(i);
 				Element chipElement = (Element) chipNode;
-				int curDiff = Math.abs(short.valueOf(chipElement.getAttribute("id")) - chipID);
+				int curDiff = Math.abs(Short.parseShort(chipElement.getAttribute("id")) - chipID);
 				if (curDiff < prevDiff) {
 					chipInfo = chipElement;
 					prevDiff = curDiff;
