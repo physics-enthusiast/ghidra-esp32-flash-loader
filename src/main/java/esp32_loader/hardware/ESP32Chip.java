@@ -96,8 +96,4 @@ public class ESP32Chip {
 			chipFunctions = new ESP32ChipFunctions();
 		}
 	}
-
-	public String getSegmentType(int address) {
-		return this.chipMappings.getSegmentType(address);
-	}
 }
