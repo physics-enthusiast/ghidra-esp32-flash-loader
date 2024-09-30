@@ -117,7 +117,7 @@ public class ESP32App {
 			int LoadAddress = reader.readNextInt();
 			int Length = reader.readNextInt();
 			byte[] Data = reader.readNextByteArray(Length); 
-			String Name = chip.getSegmentType(LoadAddress);
+			String Name = chip.chipMappings.getSegmentType(LoadAddress);
 			Segments.add(new ESP32AppSegment(LoadAddress, Length, Data, Name));
 		}
 
