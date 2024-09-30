@@ -28,7 +28,7 @@ public class ESP32ChipFunctions {
 		}
 	}
 
-	private List<String> findExtensionRecursive(Resourcefile rootdir, String ext) {
+	private List<String> findExtensionRecursive(ResourceFile rootDir, String ext) {
 		List<String> filenameList = new ArrayList<String>();
 		for (ResourceFile fileOrFolder : rootDir.listFiles()) {
 			String rootName = fileOrFolder.getName();
@@ -37,7 +37,7 @@ public class ESP32ChipFunctions {
 					filenameList.add(rootName);
 				}
 			} else if (fileOrFolder.isDirectory()) {
-				for (String branchName : findExtensionRecursive(fileOrFolder)) {
+				for (String branchName : findExtensionRecursive(fileOrFolder, ext)) {
 					filenameList.add(rootName + "/" + branchName);
 				}
 			}
