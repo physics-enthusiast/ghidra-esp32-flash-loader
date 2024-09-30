@@ -1,6 +1,7 @@
 package esp32_loader.hardware;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,9 +32,9 @@ public class ESP32ChipFunctions {
 	private List<String> findExtensionRecursive(ResourceFile rootDir, String ext) {
 		List<String> filenameList = new ArrayList<String>();
 		for (ResourceFile fileOrFolder : rootDir.listFiles()) {
-			String rootName = fileOrFolder.getName();
+			String rootName = Paths.get(fileOrFolder.getAbsolutePath()).getFileName().toString();;
 			if (fileOrFolder.isFile()) {
-				if ( rootName.substring(Math.max(rootName.length() - ext.length(), 0)) == ext) {
+				if (rootName.endsWith(ext)) {
 					filenameList.add(rootName);
 				}
 			} else if (fileOrFolder.isDirectory()) {
