@@ -78,7 +78,9 @@ public class ESP32ChipFunctions {
 		includePathList.toArray(includePaths);
 		String[] args = new String[argList.size()];
 		argList.toArray(args);
-		throw new Exception("Files: " + Arrays.toString(filenames));
+		if(true) {
+			throw new Exception("Files: " + Arrays.toString(filenames));
+		}
 		System.out.println("Includes: " + Arrays.toString(includePaths));
 		File f = new File(Application.getUserTempDirectory(), "esp32_tmp.gdt");
 		String path = f.getAbsolutePath();
