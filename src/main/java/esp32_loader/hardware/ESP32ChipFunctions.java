@@ -28,6 +28,23 @@ public class ESP32ChipFunctions {
 		}
 	}
 
+	private List<String> findExtensionRecursive(Resourcefile rootdir, String ext) {
+		List<String> filenameList = new ArrayList<String>();
+		for (ResourceFile fileOrFolder : rootDir.listFiles()) {
+			String rootName = fileOrFolder.getName();
+			if (fileOrFolder.isFile()) {
+				if ( rootName.substring(Math.max(rootName.length() - ext.length(), 0)) == ext) {
+					filenameList.add(rootName);
+				}
+			} else if (fileOrFolder.isDirectory()) {
+				for (String branchName : findExtensionRecursive(fileOrFolder)) {
+					filenameList.add(rootName + "/" + branchName);
+				}
+			}
+		}
+		return filenameList
+	}
+
 	public List<ESP32ChipFunction> chipFunctionsList;
 	public List<Structure> structs;
 	public int minAddr;
@@ -37,25 +54,30 @@ public class ESP32ChipFunctions {
 	public ESP32ChipFunctions(ESP32Chip.ChipData chipData) throws Exception {
 		String romDir = "esp-idf/components/esp_rom";
 		String romSubmodelDir = romDir + "/" + chipData.chipSubmodel;
-		String romSubmodelIncludeDir = romSubmodelDir + "/include/" + chipData.chipSubmodel + "/rom";
+		String romSubmodelIncludeDir = romSubmodelDir + "/include/" + chipData.chipSubmodel;
+		// from include_dirs of esp-idf/components/esp_rom/CMakeLists.txt
 		ResourceFile[] includeDirs = {Application.getModuleDataSubDirectory(romDir + "/include"),
+					      Application.getModuleDataSubDirectory(romSubmodelDir),
 					      Application.getModuleDataSubDirectory(romSubmodelDir + "/include"),
 					      Application.getModuleDataSubDirectory(romSubmodelIncludeDir)};
 		List<String> filenameList = new ArrayList<String>();
 		List<String> includePathList = new ArrayList<String>();
+		List<String> argList = new ArrayList<String>();
 		for (ResourceFile includeDir : includeDirs) {
-			for (ResourceFile headerFile : includeDir.listFiles()) {
-				String name = headerFile.getName();
-				if ( name.substring(Math.max(name.length() - 2, 0)) == ".h" && !filenameList.contains(name)) {
-					filenameList.add(headerFile.getAbsolutePath());
+			for (String name : findExtensionRecursive(includeDir, ".h")) {
+				if (!filenameList.contains(name)) {
+					filenameList.add(name);
 				}
 			}
 			includePathList.add(includeDir.getAbsolutePath());
+			argList.add("-I" + includeDir.getAbsolutePath());
 		}
 		String[] filenames = new String[filenameList.size()];
 		filenameList.toArray(filenames);
 		String[] includePaths = new String[includePathList.size()];
 		includePathList.toArray(includePaths);
+		String[] args = new String[argList.size()];
+		argList.toArray(args);
 		File f = new File(Application.getUserTempDirectory(), "esp32_tmp.gdt");
 		String path = f.getAbsolutePath();
 		if (f.exists()) {
@@ -68,7 +90,7 @@ public class ESP32ChipFunctions {
 		}
 		
 		FileDataTypeManager existingDTMgr = FileDataTypeManager.createFileArchive(f);
-		CParserUtils.parseHeaderFiles(new FileDataTypeManager[0], filenames, includePaths, new String[0],
+		CParserUtils.parseHeaderFiles(new FileDataTypeManager[0], filenames, includePaths, args,
 					      existingDTMgr, chipData.chipProcessor, "default", TaskMonitor.DUMMY);
 		structs = new ArrayList<Structure>();
 		Iterator<Structure> structIter = existingDTMgr.getAllStructures();
