@@ -1,7 +1,7 @@
 package esp32_loader.hardware;
 
 import java.io.File;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
