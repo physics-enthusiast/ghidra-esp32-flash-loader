@@ -42,7 +42,7 @@ public class ESP32ChipFunctions {
 				}
 			}
 		}
-		return filenameList
+		return filenameList;
 	}
 
 	public List<ESP32ChipFunction> chipFunctionsList;
